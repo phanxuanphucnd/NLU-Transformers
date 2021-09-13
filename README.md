@@ -7,7 +7,7 @@
 ## Table of contents
 
 1. [Introduction](#introduction)
-2. [How to use `denver.nlu`](#how_to_use)
+2. [How to use `arizona.nlu`](#how_to_use)
     - [Installation](#installation)
     - [Data structure](#data_structure)
     - [Example usage](#usage)
