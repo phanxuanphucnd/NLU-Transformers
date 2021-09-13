@@ -7,8 +7,8 @@ import torch.nn as nn
 from transformers.configuration_utils import PretrainedConfig
 from transformers.models.roberta.modeling_roberta import RobertaModel, RobertaPreTrainedModel
 
-from denver.nlu.modules.crf_module import CRF
-from denver.nlu.modules.decoder_module import IntentClassifier, SlotClassifier
+from arizona.nlu.modules.crf_module import CRF
+from arizona.nlu.modules.decoder_module import IntentClassifier, SlotClassifier
 
 class JointCoBERTa(RobertaPreTrainedModel):
     def __init__(

@@ -30,26 +30,26 @@ except:
 VERSION = os.getenv('PACKAGE_VERSION', 'v0.1.0')[1:]
 
 setup(
-    name='denver',
+    name='arizona',
     version=VERSION,
-    description='Denver is a Deep learning Toolbox and library for Language Understanding.',
+    description='arizona is a Deep learning Toolbox and library for Language Understanding.',
     long_description=long_description,
-    url='https://gitlab.ftech.ai/nlp/research/denver_core',
+    url='https://github.com/phanxuanphucnd/transformers-nlu',
     packages=find_packages(),
     include_package_data=True,
     package_data={},
     author='phucpx',
-    author_email='phucpx@ftech.ai',
+    author_email='phanxuanphucnd@gmail.com',
     classifiers=[
         'Programming Language :: Python :: 3.x',
     ],
     install_requires=reqs,
-    keywords='Denver',
+    keywords='arizona',
     python_requires='>=3.6',
-    py_modules=['denver'],
+    py_modules=['arizona'],
     # entry_points={
     #     'console_scripts': [
-    #         'denver = denver.run_cli:entry_point'
+    #         'arizona = arizona.run_cli:entry_point'
     #     ]
     # },
 
