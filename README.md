@@ -2,7 +2,7 @@
 [![PyPI - License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/phanxuanphucnd/Data-Augumentation/blob/main/LICENSE)
 [![Open In Jupyter notebook](https://colab.research.google.com/assets/colab-badge.svg)](https://github.com/phanxuanphucnd/Data-Augumentation/blob/main/tutorials/tutorial.ipynb)
 
-<img src="docs/imgs/logo_nlu_transformers_1.png" width="45%" height="45%" align="right" />
+<img src="docs/imgs/logo_nlu_transformers.png" width="45%" height="45%" align="right" />
 
 ## Table of contents
 
