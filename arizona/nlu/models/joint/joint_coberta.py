@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2021 by Phuc Phan
 
-import torch
 import torch.nn as nn
 
 from transformers.configuration_utils import PretrainedConfig
