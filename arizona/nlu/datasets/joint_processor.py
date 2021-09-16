@@ -77,6 +77,7 @@ class JointDataProcessor(object):
         self.data_df = data_df
         self.intent_labels = intent_labels
         self.tag_labels = tag_labels
+        self.kwargs = kwargs
 
     @classmethod
     def from_csv(

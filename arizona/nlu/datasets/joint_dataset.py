@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class JointNLUDataset():
     def __init__(
         self, 
-        mode, 
+        mode: str='train', 
         data_path: str=None, 
         text_col: str=None, 
         intent_col: str=None, 
@@ -53,6 +53,9 @@ class JointNLUDataset():
             size_per_class=size_per_class,
             replace_mode=replace_mode
         )
+
+    def __len__(self):
+        return len(self.processor.data_df)
 
     def build_dataset(self):
         logger.info(f"Creates features from dataset file at {self.data_path}")
