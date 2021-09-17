@@ -9,7 +9,7 @@ import pandas as pd
 from pandas import DataFrame
 
 from arizona.nlu.datasets.preprocessor import BalanceLearning
-from arizona.nlu.datasets.preprocessor import standardize_df, normalize_df
+from arizona.nlu.datasets.data_utils import standardize_df, normalize_df
 from arizona.nlu.datasets.data_utils import get_intent_labels, get_tag_labels
 
 logger = logging.getLogger(__name__)
