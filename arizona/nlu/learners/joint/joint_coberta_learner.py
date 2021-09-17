@@ -92,7 +92,7 @@ class JointCoBERTaLearner():
         if hasattr(test_dataset, 'dataset'):
             test_dataset = test_dataset.dataset
 
-        logger.info(f"Dataset Info")
+        logger.info(f"➖➖➖➖➖ Dataset Info ➖➖➖➖➖")
         logger.info(f"  Length of Training dataset: {len(train_dataset)}")
         logger.info(f"  Length of Test dataset: {len(test_dataset)}")
         logger.info(f"  Description intent classes: {len(train_dataset.processor.intent_labels)}"
@@ -121,7 +121,7 @@ class JointCoBERTaLearner():
         self.model.to(self.device)
 
         if view_model:
-            logger.info(f"Model Info")
+            logger.info(f"➖➖➖➖➖ Model Info ➖➖➖➖➖")
             print(self.model)
 
         train_sampler = RandomSampler(train_dataset)

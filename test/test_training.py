@@ -22,7 +22,7 @@ def test_training():
         rm_url=False,
         rm_special_token=False,
         balance_data=False
-    )
+    ).build_dataset()
 
     test_dataset = JointNLUDataset(
         mode='train',
@@ -40,7 +40,7 @@ def test_training():
         rm_url=False,
         rm_special_token=False,
         balance_data=False
-    )
+    ).build_dataset()
 
     learner = JointCoBERTaLearner(model_name_or_path='phobert')
     learner.train(
@@ -50,7 +50,7 @@ def test_training():
         eval_batch_size=64,
         learning_rate=5e-5,
         n_epochs=1,
-        logging_steps=100,
+        logging_steps=10,
         save_steps=10,
         view_model=True,
         model_dir='./models',
