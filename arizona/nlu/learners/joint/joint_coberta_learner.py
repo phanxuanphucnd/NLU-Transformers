@@ -24,7 +24,7 @@ class JointCoBERTaLearner():
         self, 
         model: JointCoBERTa=None, 
         model_name_or_path: str=None,
-        model_type: str='coberta',
+        model_type: str=None,
         device: str=None,
         seed: int=123, 
         **kwargs
@@ -40,8 +40,14 @@ class JointCoBERTaLearner():
         self.pad_token_label_id = self.ignore_index
 
         self.model = model
-        self.model_type = model_type
+        self.kwargs =kwargs
         self.model_name_or_path = model_name_or_path
+
+        if model_type:
+            self.model_type = model_type
+        else:
+            self.model_type = model_name_or_path
+
         self.config_class = get_from_registry(model_type, CONFIGS_REGISTRY)
         self.config = self.config_class.from_pretrained(model_name_or_path, finetuning_task='nlu')
         self.model_class = get_from_registry(model_type, MODELS_REGISTRY)
