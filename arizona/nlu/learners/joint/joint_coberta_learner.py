@@ -2,7 +2,6 @@
 # Copyright (c) 2021 by Phuc Phan
 
 import os
-from test.test_training import test_training
 import torch
 import logging
 import numpy as np

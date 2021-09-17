@@ -9,6 +9,7 @@ def test_training():
     train_dataset = JointNLUDataset(
         mode='train',
         data_path='data/cometv3/train.csv',
+        tokenizer='phobert',
         text_col='text',
         intent_col='intent',
         tag_col='tags',
@@ -26,6 +27,7 @@ def test_training():
     test_dataset = JointNLUDataset(
         mode='train',
         data_path='data/cometv3/test.csv',
+        tokenizer='phobert',
         text_col='text',
         intent_col='intent',
         tag_col='tags',

@@ -130,7 +130,7 @@ class JointDataProcessor(object):
         replace_mode: bool=False,
         **kwargs
     ):
-        if data_df:
+        if data_df is not None:
             if balance_data:
                 data_df = BalanceLearning().subtext_sampling(
                     data=data_df,
