@@ -7,7 +7,7 @@ from transformers.configuration_utils import PretrainedConfig
 from transformers.models.roberta.modeling_roberta import RobertaModel, RobertaPreTrainedModel
 
 from arizona.nlu.modules.crf_module import CRF
-from arizona.nlu.modules.decoder_module import IntentClassifier, tagClassifier
+from arizona.nlu.modules.decoder_module import IntentClassifier, SequenceTaggerClassifier
 
 class JointCoBERTa(RobertaPreTrainedModel):
     def __init__(
@@ -24,6 +24,7 @@ class JointCoBERTa(RobertaPreTrainedModel):
         super(JointCoBERTa, self).__init__(config)
 
         # self.args = args
+        self.kwargs = kwargs
         self.num_intent_labels = len(intent_label_list)
         self.num_tag_labels = len(tag_label_list)
         self.coberta = RobertaModel(config)
@@ -37,7 +38,7 @@ class JointCoBERTa(RobertaPreTrainedModel):
             num_intent_labels=self.num_intent_labels, 
             dropout=dropout
         )
-        self.tag_classifier = tagClassifier(
+        self.tag_classifier = SequenceTaggerClassifier(
             input_dim=config.hidden_size,
             num_tag_labels=self.num_tag_labels,
             dropout=dropout

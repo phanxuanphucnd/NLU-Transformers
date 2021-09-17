@@ -17,9 +17,9 @@ class IntentClassifier(nn.Module):
         return logits
 
 
-class SlotClassifier(nn.Module):
+class SequenceTaggerClassifier(nn.Module):
     def __init__(self, input_dim, num_slot_labels, dropout=0.):
-        super(SlotClassifier, self).__init__()
+        super(SequenceTaggerClassifier, self).__init__()
 
         self.dropout = nn.Dropout(dropout)
         self.linear = nn.Linear(input_dim, num_slot_labels)

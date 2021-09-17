@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2021 by Phuc Phan
 
+from numpy.lib.arraysetops import isin
 import torch
 import logging
 
+from typing import Union
 from torch.utils.data import TensorDataset
 from transformers import PreTrainedTokenizerBase
 
+from arizona.utils import TOKENIZERS_REGISTRY, MODEL_PATH_MAP, get_from_registry
 from arizona.nlu.datasets.joint_processor import JointDataProcessor, InputFeatures
 
 logger = logging.getLogger(__name__)
@@ -30,14 +33,23 @@ class JointNLUDataset():
         balance_data: bool=False,
         size_per_class: int=None,
         replace_mode: bool=False,
-        tokenizer: PreTrainedTokenizerBase=None,
+        tokenizer: Union[str, PreTrainedTokenizerBase]=None,
         **kwargs
     ):
         self.mode = mode
         self.data_path = data_path
-        self.tokenizer = tokenizer
         self.ignore_index = ignore_index
         self.max_seq_len = max_seq_len
+
+        # TODO: Get tokenizer
+        if isinstance(tokenizer, PreTrainedTokenizerBase):
+            self.tokenizer = tokenizer
+        else:
+            self.tokenizer = get_from_registry(
+                tokenizer, TOKENIZERS_REGISTRY).from_pretrained(
+                    MODEL_PATH_MAP.get(tokenizer, None)
+                )
+        # TODO: Initialize processor
         self.processor = JointDataProcessor.from_csv(
             data_path=data_path, 
             text_col=text_col,
@@ -74,6 +86,7 @@ class JointNLUDataset():
 
         dataset = TensorDataset(all_input_ids, all_attention_mask,
                                 all_token_type_ids, all_intent_label_ids, all_slot_labels_ids)
+        
         return dataset
 
     def convert_examples_to_features(
