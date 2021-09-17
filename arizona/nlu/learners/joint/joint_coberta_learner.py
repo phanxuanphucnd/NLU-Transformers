@@ -255,7 +255,7 @@ class JointCoBERTaLearner():
                 else:
                     tag_preds = np.append(tag_preds, tag_logits.detach().cpu().numpy(), axis=0)
 
-                out_tag_labels_ids = np.append(out_tag_labels_ids, inputs["slot_labels_ids"].detach().cpu().numpy(), axis=0)
+                out_tag_labels_ids = np.append(out_tag_labels_ids, inputs["tag_labels_ids"].detach().cpu().numpy(), axis=0)
 
         
         eval_loss = eval_loss / nb_eval_steps
