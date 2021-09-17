@@ -2,6 +2,7 @@
 # Copyright (c) 2021 by Phuc Phan
 
 import os
+from test.test_training import test_training
 import torch
 import logging
 import numpy as np
@@ -82,6 +83,13 @@ class JointCoBERTaLearner():
         model_name: str='coberta-mini.nlu',
         **kwargs
     ):
+        # TODO: Process dataset
+        if hasattr(train_dataset, 'dataset'):
+            train_dataset = train_dataset.dataset
+        
+        if hasattr(test_dataset, 'dataset'):
+            test_dataset = test_dataset.dataset
+
         logger.info(f"Dataset Info")
         logger.info(f"Length of Training dataset: {len(train_dataset)}")
         logger.info(f"Length of Test dataset: {len(test_dataset)}")

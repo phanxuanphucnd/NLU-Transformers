@@ -66,6 +66,8 @@ class JointNLUDataset():
             replace_mode=replace_mode
         )
 
+        dataset = self.build_dataset()
+
     def __len__(self):
         return len(self.processor.data_df)
 
