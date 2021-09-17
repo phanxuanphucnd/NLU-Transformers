@@ -93,10 +93,12 @@ class JointCoBERTaLearner():
             test_dataset = test_dataset.dataset
 
         logger.info(f"Dataset Info")
-        logger.info(f"Length of Training dataset: {len(train_dataset)}")
-        logger.info(f"Length of Test dataset: {len(test_dataset)}")
-        logger.info(f"Description intent classes: {train_dataset.processor.intent_labels}")
-        logger.info(f"Description tag classes: {train_dataset.processor.tag_labels}")
+        logger.info(f"  Length of Training dataset: {len(train_dataset)}")
+        logger.info(f"  Length of Test dataset: {len(test_dataset)}")
+        logger.info(f"  Description intent classes: {len(train_dataset.processor.intent_labels)}"
+                    f"  {train_dataset.processor.intent_labels}")
+        logger.info(f"  Description tag classes: {len(train_dataset.processor.tag_labels)}"
+                    f"  {train_dataset.processor.tag_labels}")
 
         self.intent_label_list = train_dataset.processor.intent_labels
         self.tag_label_list = train_dataset.processor.tag_labels
@@ -104,8 +106,9 @@ class JointCoBERTaLearner():
         if not self.model and not self.model_name_or_path:
             raise ValueError(f"Either parameter `model` or `model_name_or_path` must be not None value !")
         elif not self.model:
+            model_ = MODEL_PATH_MAP.get(self.model_name_or_path, self.model_name_or_path)
             self.model = self.model_class.from_pretrained(
-                self.model_name_or_path,
+                model_,
                 config=self.config,
                 dropout=self.dropout,
                 use_crf=self.use_crf,
