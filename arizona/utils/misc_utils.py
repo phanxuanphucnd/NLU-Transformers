@@ -6,7 +6,8 @@ import random
 import numpy as np
 
 from typing import Any
-from transformers import AutoTokenizer, RobertaConfig
+from transformers import RobertaConfig, BertConfig
+from transformers import AutoTokenizer, BertTokenizer
 from seqeval.metrics import precision_score, recall_score, f1_score
 
 from arizona.nlu.models import JointCoBERTa
@@ -16,6 +17,7 @@ CONFIGS_REGISTRY = {
     'phobert': RobertaConfig, 
     'vinai/phobert-base': RobertaConfig,
     'vinai/phobert-large': RobertaConfig,
+    'bert': BertConfig, 
 }
 
 MODELS_REGISTRY = {
@@ -23,6 +25,7 @@ MODELS_REGISTRY = {
     'phobert': JointCoBERTa, 
     'vinai/phobert-base': JointCoBERTa,
     'vinai/phobert-large': JointCoBERTa,
+    'bert': JointCoBERTa,
 }
 
 TOKENIZERS_REGISTRY = {
@@ -30,11 +33,13 @@ TOKENIZERS_REGISTRY = {
     'phobert': AutoTokenizer, 
     'vinai/phobert-base': AutoTokenizer,
     'vinai/phobert-large': AutoTokenizer,
+    'bert': BertTokenizer,
 }
 
 MODEL_PATH_MAP = {
     'coberta': '',
     'phobert': 'vinai/phobert-base',
+    'bert': 'bert-base-uncased',
 }
 
 def str2bool(value):

@@ -60,7 +60,7 @@ class JointCoBERTa(RobertaPreTrainedModel):
         total_loss = 0
 
         # TODO: Intent softmax
-        if tag_labels_ids:
+        if tag_labels_ids is not None:
             if self.num_intent_labels == 1:
                 intent_loss_func = nn.MSELoss()
                 intent_loss = intent_loss_func(intent_logits.view(-1), intent_label_ids.view(-1))
@@ -73,14 +73,14 @@ class JointCoBERTa(RobertaPreTrainedModel):
             total_loss += intent_loss
         
         # TODO: tag softmax
-        if tag_labels_ids:
+        if tag_labels_ids is not None:
             if self.use_crf:
                 tag_loss = self.crf(tag_logits, tag_labels_ids, mask=attention_mask.byte(), reduction='mean')
                 tag_loss = -1 * tag_loss          # Negative log-likelihood
             else:
                 tag_loss_func = nn.CrossEntropyLoss(ignore_index=self.ignore_index)
                 # TODO: Only keep active parts of the loss
-                if attention_mask:
+                if attention_mask is not None:
                     active_loss = attention_mask.view(-1) == 1
                     active_logits = tag_logits.view(-1, self.num_tag_labels)[active_loss]
                     active_labels = tag_labels_ids.view(-1)[active_loss]
