@@ -148,8 +148,8 @@ class JointDataProcessor(object):
                 rm_special_token=rm_special_token, lowercase=lowercase
             )
 
-            intent_labels = get_intent_labels(data_df, intent_col, special_intents)
-            tag_labels = get_tag_labels(data_df, tag_col, special_tags)
+            intent_labels = get_intent_labels(data_df, 'intent', special_intents)
+            tag_labels = get_tag_labels(data_df, 'tag', special_tags)
         else:
             raise ValueError(f"The parameter `data_df` must be not None value !")
 
