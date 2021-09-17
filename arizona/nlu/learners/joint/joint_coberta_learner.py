@@ -85,23 +85,19 @@ class JointCoBERTaLearner():
         model_name: str='coberta-mini.nlu',
         **kwargs
     ):
-        # TODO: Process dataset
-        if hasattr(train_dataset, 'dataset'):
-            train_dataset = train_dataset.dataset
-        
-        if hasattr(test_dataset, 'dataset'):
-            test_dataset = test_dataset.dataset
-
         logger.info(f"➖➖➖➖➖ Dataset Info ➖➖➖➖➖")
-        logger.info(f"  Length of Training dataset: {len(train_dataset)}")
-        logger.info(f"  Length of Test dataset: {len(test_dataset)}")
-        logger.info(f"  Description intent classes: {len(train_dataset.processor.intent_labels)}"
-                    f"  {train_dataset.processor.intent_labels}")
-        logger.info(f"  Description tag classes: {len(train_dataset.processor.tag_labels)}"
-                    f"  {train_dataset.processor.tag_labels}")
+        logger.info(f"Length of Training dataset: {len(train_dataset)}")
+        logger.info(f"Length of Test dataset: {len(test_dataset)}")
+        logger.info(f"Description intent classes: {len(train_dataset.processor.intent_labels)} - "
+                    f"{train_dataset.processor.intent_labels}")
+        logger.info(f"Description tag classes: {len(train_dataset.processor.tag_labels)} - "
+                    f"{train_dataset.processor.tag_labels}")
 
         self.intent_label_list = train_dataset.processor.intent_labels
         self.tag_label_list = train_dataset.processor.tag_labels
+
+        train_dataset = train_dataset.build_dataset()
+        test_dataset = test_dataset.build_dataset()
 
         if not self.model and not self.model_name_or_path:
             raise ValueError(f"Either parameter `model` or `model_name_or_path` must be not None value !")
@@ -145,13 +141,13 @@ class JointCoBERTaLearner():
         scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=t_total)
 
         logger.info(f"➖➖➖➖➖ Running training ➖➖➖➖➖")
-        logger.info(f" Num examples = {len(train_dataset)}")
-        logger.info(f" Num epochs = {n_epochs}")
-        logger.info(f" Total train batch size = {train_batch_size}")
-        logger.info(f" Gradient accumulation steps = {gradient_accumulation_steps}")
-        logger.info(f" Total optimization steps = {t_total}")
-        logger.info(f" Logging steps = {logging_steps}")
-        logger.info(f" Save steps = {save_steps}")
+        logger.info(f"Num examples = {len(train_dataset)}")
+        logger.info(f"Num epochs = {n_epochs}")
+        logger.info(f"Total train batch size = {train_batch_size}")
+        logger.info(f"Gradient accumulation steps = {gradient_accumulation_steps}")
+        logger.info(f"Total optimization steps = {t_total}")
+        logger.info(f"Logging steps = {logging_steps}")
+        logger.info(f"Save steps = {save_steps}")
 
         global_step = 0
         tr_loss = 0.0
