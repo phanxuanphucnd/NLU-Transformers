@@ -65,26 +65,26 @@ def set_seed(SEED):
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(SEED)
 
-def compute_metrics(intent_preds, intent_labels, slot_preds, slot_labels):
-    assert len(intent_preds) == len(intent_labels) == len(slot_preds) == len(slot_labels)
+def compute_metrics(intent_preds, intent_labels, tag_preds, tag_labels):
+    assert len(intent_preds) == len(intent_labels) == len(tag_preds) == len(tag_labels)
     results = {}
     intent_result = get_intent_acc(intent_preds, intent_labels)
-    slot_result = get_slot_metrics(slot_preds, slot_labels)
-    sementic_result = get_sentence_frame_acc(intent_preds, intent_labels, slot_preds, slot_labels)
+    tag_result = get_tag_metrics(tag_preds, tag_labels)
+    sementic_result = get_sentence_frame_acc(intent_preds, intent_labels, tag_preds, tag_labels)
 
     results.update(intent_result)
-    results.update(slot_result)
+    results.update(tag_result)
     results.update(sementic_result)
 
     return results
 
 
-def get_slot_metrics(preds, labels):
+def get_tag_metrics(preds, labels):
     assert len(preds) == len(labels)
     return {
-        "slot_precision": precision_score(labels, preds),
-        "slot_recall": recall_score(labels, preds),
-        "slot_f1": f1_score(labels, preds)
+        "tag_precision": precision_score(labels, preds),
+        "tag_recall": recall_score(labels, preds),
+        "tag_f1": f1_score(labels, preds)
     }
 
 
@@ -99,24 +99,24 @@ def read_prediction_text(args):
     return [text.strip() for text in open(os.path.join(args.pred_dir, args.pred_input_file), 'r', encoding='utf-8')]
 
 
-def get_sentence_frame_acc(intent_preds, intent_labels, slot_preds, slot_labels):
-    """For the cases that intent and all the slots are correct (in one sentence)"""
+def get_sentence_frame_acc(intent_preds, intent_labels, tag_preds, tag_labels):
+    """For the cases that intent and all the tags are correct (in one sentence)"""
     # Get the intent comparison result
     intent_result = (intent_preds == intent_labels)
 
-    # Get the slot comparision result
-    slot_result = []
-    for preds, labels in zip(slot_preds, slot_labels):
+    # Get the tag comparision result
+    tag_result = []
+    for preds, labels in zip(tag_preds, tag_labels):
         assert len(preds) == len(labels)
         one_sent_result = True
         for p, l in zip(preds, labels):
             if p != l:
                 one_sent_result = False
                 break
-        slot_result.append(one_sent_result)
-    slot_result = np.array(slot_result)
+        tag_result.append(one_sent_result)
+    tag_result = np.array(tag_result)
 
-    sementic_acc = np.multiply(intent_result, slot_result).mean()
+    sementic_acc = np.multiply(intent_result, tag_result).mean()
     return {
         "sementic_frame_acc": sementic_acc
     }
