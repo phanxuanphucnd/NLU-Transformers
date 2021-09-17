@@ -141,7 +141,10 @@ def get_intent_labels(data_df, intent_col: str='intent', special_intents: list=[
 
 
 def get_tag_labels(data_df, tag_col: str='tag', special_tags: list=[]):
-    tag_label_list = list(data_df[tag_col])
+    tag_label_list = []
+    for i in range(len(data_df)):
+        tag_label_list.extend(data_df[tag_col][i].split())
+        
     tag_labels = list(set(tag_label_list))
     if special_tags:
         special_tags.extend(tag_labels)
