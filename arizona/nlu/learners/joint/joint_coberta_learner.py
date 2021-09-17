@@ -301,7 +301,7 @@ class JointCoBERTaLearner():
         if not os.path.exists(model_path):
             os.makedirs(model_path)
         
-        model_to_save = self.model.module if hasattr(self.mode, 'module') else self.model
+        model_to_save = self.model.module if hasattr(self.model, 'module') else self.model
         model_to_save.save_pretrained(model_path)
 
         # TODO: Save training arguments togethor with the trained model
