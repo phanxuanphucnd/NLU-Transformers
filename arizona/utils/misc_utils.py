@@ -14,16 +14,22 @@ from arizona.nlu.models import JointCoBERTa
 CONFIGS_REGISTRY = {
     'coberta': RobertaConfig, 
     'phobert': RobertaConfig, 
+    'vinai/phobert-base': RobertaConfig,
+    'vinai/phobert-large': RobertaConfig,
 }
 
 MODELS_REGISTRY = {
     'coberta': JointCoBERTa,
     'phobert': JointCoBERTa, 
+    'vinai/phobert-base': JointCoBERTa,
+    'vinai/phobert-large': JointCoBERTa,
 }
 
 TOKENIZERS_REGISTRY = {
     'coberta': AutoTokenizer,
     'phobert': AutoTokenizer, 
+    'vinai/phobert-base': AutoTokenizer,
+    'vinai/phobert-large': AutoTokenizer,
 }
 
 MODEL_PATH_MAP = {

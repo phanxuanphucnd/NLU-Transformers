@@ -47,7 +47,7 @@ class JointNLUDataset():
         else:
             self.tokenizer = get_from_registry(
                 tokenizer, TOKENIZERS_REGISTRY).from_pretrained(
-                    MODEL_PATH_MAP.get(tokenizer, None)
+                    MODEL_PATH_MAP.get(tokenizer, tokenizer)
                 )
         # TODO: Initialize processor
         self.processor = JointDataProcessor.from_csv(

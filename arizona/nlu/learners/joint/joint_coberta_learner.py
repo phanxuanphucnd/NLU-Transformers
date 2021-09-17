@@ -14,7 +14,7 @@ from arizona.utils import set_seed
 from arizona.utils import compute_metrics
 from arizona.utils import get_from_registry
 from arizona.nlu.models.joint import JointCoBERTa
-from arizona.utils import CONFIGS_REGISTRY, MODELS_REGISTRY
+from arizona.utils import CONFIGS_REGISTRY, MODELS_REGISTRY, MODEL_PATH_MAP
 from arizona.nlu.datasets.joint_dataset import JointNLUDataset
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,10 @@ class JointCoBERTaLearner():
             self.model_type = model_name_or_path
 
         self.config_class = get_from_registry(self.model_type, CONFIGS_REGISTRY)
-        self.config = self.config_class.from_pretrained(model_name_or_path, finetuning_task='nlu')
+        self.config = self.config_class.from_pretrained(
+            MODEL_PATH_MAP.get(model_name_or_path, model_name_or_path), 
+            finetuning_task='nlu'
+        )
         self.model_class = get_from_registry(self.model_type, MODELS_REGISTRY)
 
         if not device:
