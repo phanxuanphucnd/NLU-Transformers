@@ -264,7 +264,7 @@ class JointCoBERTaLearner():
         }
 
         # TODO: Intent results
-        intent_preds = np.argmax(intent_preds)
+        intent_preds = np.argmax(intent_preds, axis=1)
 
         # TODO: Tag results
         if not self.use_crf:
