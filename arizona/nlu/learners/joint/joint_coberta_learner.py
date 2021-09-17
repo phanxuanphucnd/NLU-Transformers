@@ -48,9 +48,9 @@ class JointCoBERTaLearner():
         else:
             self.model_type = model_name_or_path
 
-        self.config_class = get_from_registry(model_type, CONFIGS_REGISTRY)
+        self.config_class = get_from_registry(self.model_type, CONFIGS_REGISTRY)
         self.config = self.config_class.from_pretrained(model_name_or_path, finetuning_task='nlu')
-        self.model_class = get_from_registry(model_type, MODELS_REGISTRY)
+        self.model_class = get_from_registry(self.model_type, MODELS_REGISTRY)
 
         if not device:
             self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
