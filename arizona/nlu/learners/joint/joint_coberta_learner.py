@@ -78,9 +78,9 @@ class JointCoBERTaLearner():
         max_grad_norm: float=1.0,
         max_steps: int=-1,
         warmup_steps: int=0,
-        logging_steps: int=200,
-        save_steps: int=1000,
         view_model: bool=True, 
+        monitor_test: bool=True,
+        save_best_model: bool=True,
         model_dir: str='./model',
         model_name: str='coberta-mini.nlu',
         **kwargs
@@ -131,13 +131,14 @@ class JointCoBERTaLearner():
 
         # TODO: Prepare optimizer and schedule (Linear warmup and decay)
         no_decay = ['bias', 'LayerNorm.weight']
-        optimizer_grouped__parameters = [
+        optimizer_grouped_parameters = [
             {'params': [p for n, p in self.model.named_parameters() if not any(nd in n for nd in no_decay)],
              'weight_decay': weight_decay},
             {'params': [p for n, p in self.model.named_parameters() if any(nd in n for nd in no_decay)],
              'weight_decay': 0.0}
         ]
-        optimizer = AdamW(optimizer_grouped__parameters, lr=learning_rate, eps=adam_epsilon)
+ 
+        optimizer = AdamW(optimizer_grouped_parameters, lr=learning_rate, eps=adam_epsilon)
         scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=t_total)
 
         logger.info(f"➖➖➖➖➖ Running training ➖➖➖➖➖")
@@ -146,14 +147,16 @@ class JointCoBERTaLearner():
         logger.info(f"Total train batch size = {train_batch_size}")
         logger.info(f"Gradient accumulation steps = {gradient_accumulation_steps}")
         logger.info(f"Total optimization steps = {t_total}")
-        logger.info(f"Logging steps = {logging_steps}")
-        logger.info(f"Save steps = {save_steps}")
+        logger.info(f"Monitor tests = {monitor_test}")
+        logger.info(f"Save best model = {save_best_model}")
 
         global_step = 0
         tr_loss = 0.0
         self.model.zero_grad()
 
         train_iterator = trange(int(n_epochs), desc="Epoch")
+
+        best_score = 0
         
         for _ in train_iterator:
             epoch_iterator = tqdm(train_dataloader, desc='Iteration')
@@ -176,8 +179,8 @@ class JointCoBERTaLearner():
                     loss = loss / gradient_accumulation_steps
 
                 loss.backward()
-
                 tr_loss += loss.item()
+
                 if (step + 1) % gradient_accumulation_steps == 0:
                     torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_grad_norm)
 
@@ -186,10 +189,12 @@ class JointCoBERTaLearner():
                     self.model.zero_grad()
                     global_step += 1
 
-                    if logging_steps > 0 and global_step % logging_steps == 0:
-                        self.evaluate(test_dataset, eval_batch_size)
-                    
-                    if save_steps > 0 and global_step % save_steps == 0:
+                if monitor_test:
+                    results = self.evaluate(test_dataset, eval_batch_size)
+                
+                if save_best_model and monitor_test:
+                    if best_score < results.get('intent_acc', 0.0):
+                        logger.info(f">>> Save the best model !")
                         self.save_model(model_dir, model_name)
 
             if 0 < max_steps < global_step:

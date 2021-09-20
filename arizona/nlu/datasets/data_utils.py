@@ -151,3 +151,16 @@ def get_tag_labels(data_df, tag_col: str='tag', special_tags: list=[]):
         return special_tags
 
     return tag_labels
+
+
+def storages_labels(intent_labels, tag_labels):
+    ipath = './intent_labels.txt'
+    tpath = './intent_labels.txt'
+
+    with open(ipath, 'w', encoding='utf-8') as f:
+        for intent in intent_labels:
+            f.writelines(intent + '\n')
+
+    with open(tpath, 'w', encoding='utf-8') as f:
+        for tag in tag_labels:
+            f.writelines(tag + '\n')

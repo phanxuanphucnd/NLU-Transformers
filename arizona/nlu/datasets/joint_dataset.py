@@ -66,8 +66,6 @@ class JointNLUDataset():
             replace_mode=replace_mode
         )
 
-        dataset = self.build_dataset()
-
     def __len__(self):
         return len(self.processor.data_df)
 
@@ -159,8 +157,8 @@ class JointNLUDataset():
 
             intent_label_id = int(example.intent_label)
 
-            if ex_index < 5:
-                logger.info("*** Example ***")
+            if ex_index < 3:
+                logger.info("➖➖➖➖➖ Examples ➖➖➖➖➖")
                 logger.info("guid: %s" % example.guid)
                 logger.info("tokens: %s" % " ".join([str(x) for x in tokens]))
                 logger.info("input_ids: %s" % " ".join([str(x) for x in input_ids]))
