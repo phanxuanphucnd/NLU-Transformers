@@ -42,14 +42,14 @@ def test_training():
         balance_data=False
     )
 
-    learner = JointCoBERTaLearner(model_name_or_path='phobert')
+    learner = JointCoBERTaLearner(model_name_or_path='phobert', device='cpu')
     learner.train(
         train_dataset,
         test_dataset,
         train_batch_size=128,
         eval_batch_size=256,
         learning_rate=5e-5,
-        n_epochs=10,
+        n_epochs=1,
         logging_steps=200,
         save_steps=200,
         view_model=True,

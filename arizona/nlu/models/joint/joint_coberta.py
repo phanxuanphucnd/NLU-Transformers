@@ -91,6 +91,6 @@ class JointCoBERTa(RobertaPreTrainedModel):
             total_loss += self.tag_loss_coef * tag_loss
 
         outputs = ((intent_logits, tag_logits), ) + outputs[2:] # add hidden states and attention if they are here
-        outputs = (total_loss, ) + outputs                       # (loss), logits, (hidden_states), (attentions)
+        outputs = (total_loss, ) + outputs                      # (loss), logits, (hidden_states), (attentions)
         
         return outputs 
