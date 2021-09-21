@@ -22,6 +22,8 @@ class JointNLUDataset():
         text_col: str=None, 
         intent_col: str=None, 
         tag_col: str=None, 
+        intent_labels: list=None,
+        tag_labels: list=None,
         special_intents: list=["UNK"],
         special_tags: list=["PAD", "UNK"],
         max_seq_len: int=100,
@@ -50,7 +52,12 @@ class JointNLUDataset():
                     MODEL_PATH_MAP.get(tokenizer, tokenizer)
                 )
         # TODO: Initialize processor
-        self.processor = JointDataProcessor.from_csv(
+        self.processor = JointDataProcessor(
+            mode=mode,
+            intent_labels=intent_labels, 
+            tag_labels=tag_labels
+        ).from_csv(
+            mode=self.mode,
             data_path=data_path, 
             text_col=text_col,
             intent_col=intent_col,
@@ -66,12 +73,21 @@ class JointNLUDataset():
             replace_mode=replace_mode
         )
 
+        self.intent_labels = intent_labels if intent_labels else self.processor.intent_labels
+        self.tag_labels = tag_labels if tag_labels else self.processor.tag_labels
+
     def __len__(self):
         return len(self.processor.data_df)
 
+    def get_intent_labels(self):
+        return self.intent_labels
+    
+    def get_tag_labels(self):
+        return self.tag_labels
+
     def build_dataset(self):
         logger.info(f"Creates features from dataset file at {self.data_path}")
-        examples = self.processor.get_examples(self.mode)
+        examples = self.processor.get_examples()
 
         pad_token_label_id = self.ignore_index
         features = self.convert_examples_to_features(

@@ -11,7 +11,6 @@ from pandas import DataFrame
 from arizona.nlu.datasets.preprocessor import BalanceLearning
 from arizona.nlu.datasets.data_utils import standardize_df, normalize_df
 from arizona.nlu.datasets.data_utils import get_intent_labels, get_tag_labels
-
 logger = logging.getLogger(__name__)
 
 class InputExample(object):
@@ -69,15 +68,37 @@ class JointDataProcessor(object):
     """Processor for the JointCoBERTa dataset."""
     def __init__(
         self, 
+        mode: str='train',
         data_df: DataFrame=None, 
+        intent_col: str='intent',
+        tag_col: str='tag',
         intent_labels: list=None, 
         tag_labels: list=None,
+        special_intents: list=["UNK"],
+        special_tags: list=["PAD", "UNK"],
         **kwargs
     ):
+        self.mode = mode
+        self.kwargs = kwargs
         self.data_df = data_df
         self.intent_labels = intent_labels
         self.tag_labels = tag_labels
-        self.kwargs = kwargs
+        if intent_labels is None and data_df is not None:
+            if mode.lower() == 'train':
+                self.intent_labels = get_intent_labels(data_df, intent_col, special_intents)
+            else:
+                raise ValueError(
+                    f"With `mode=valid` or `mode=test` the `intent_labels` parameter must be not None. "
+                    f"You can setup `intent_labels=train_dataset.intent_labels` in `JointNLUDataset()` class to solve this problem."
+                )
+        if tag_labels is None and data_df is not None:
+            if mode.lower() == 'train':
+                self.tag_labels = get_tag_labels(data_df, tag_col, special_tags)
+            else:
+                raise ValueError(
+                    f"With `mode=valid` or `mode=test` the `tag_labels` parameter must be not None. "
+                    f"You can setup `tag_labels=train_dataset.tag_labels` in `JointNLUDataset()` class to solve this problem."
+                )
 
     @classmethod
     def from_csv(
@@ -86,8 +107,6 @@ class JointDataProcessor(object):
         text_col: str=None, 
         intent_col: str=None, 
         tag_col: str=None, 
-        special_intents: list=["UNK"],
-        special_tags: list=["PAD", "UNK"],
         lowercase: bool=True, 
         rm_emoji: bool=True, 
         rm_url: bool=True, 
@@ -107,8 +126,7 @@ class JointDataProcessor(object):
 
         return cls.from_df(
             data_df, text_col, intent_col, tag_col, 
-            special_intents, special_tags, lowercase, 
-            rm_emoji, rm_url, rm_special_token, 
+            lowercase, rm_emoji, rm_url, rm_special_token, 
             balance_data, size_per_class, replace_mode
         )
     
@@ -119,8 +137,6 @@ class JointDataProcessor(object):
         text_col: str='text', 
         intent_col: str='intent', 
         tag_col: str='tag', 
-        special_intents: list=["UNK"],
-        special_tags: list=["PAD", "UNK"],
         lowercase: bool=True, 
         rm_emoji: bool=True, 
         rm_url: bool=True, 
@@ -132,7 +148,7 @@ class JointDataProcessor(object):
     ):
         if data_df is not None:
             if balance_data:
-                data_df = BalanceLearning().subtext_sampling(
+                data_df = BalanceLearning.subtext_sampling(
                     data=data_df,
                     text_col=text_col,
                     size_per_class=size_per_class,
@@ -148,12 +164,10 @@ class JointDataProcessor(object):
                 rm_special_token=rm_special_token, lowercase=lowercase
             )
 
-            intent_labels = get_intent_labels(data_df, 'intent', special_intents)
-            tag_labels = get_tag_labels(data_df, 'tag', special_tags)
         else:
             raise ValueError(f"The parameter `data_df` must be not None value !")
 
-        return cls(data_df, intent_labels, tag_labels)
+        return cls(data_df=data_df)
 
     def _create_examples(self, texts, intents, tags, set_type):
         """Creates examples for the training and dev sets."""
@@ -178,15 +192,15 @@ class JointDataProcessor(object):
 
         return examples
 
-    def get_examples(self, mode):
+    def get_examples(self, **kwargs):
         """Get all examples from data.
         
         Args:
             mode: train, dev, test.
         """
-        logger.info(f"LOOKING AT MODE: {mode}")
+        logger.info(f"LOOKING AT MODE: {self.mode}")
 
         return self._create_examples(texts=list(self.data_df['text']),
                                      intents=list(self.data_df['intent']),
                                      tags=list(self.data_df['tag']),
-                                     set_type=mode)
+                                     set_type=self.mode)

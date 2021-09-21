@@ -290,7 +290,7 @@ class JointCoBERTaLearner():
 
         logger.info(f"➖➖➖➖➖ Evaluation results ➖➖➖➖➖")
         for key in sorted(results.keys()):
-            logger.info(f" {key} = {str(results[key])}")
+            logger.info(f"{key} = {str(results[key])}")
 
         return results
 

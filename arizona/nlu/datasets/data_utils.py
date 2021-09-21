@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2021 by Phuc Phan
 
+import os
 import re
 import logging
 import pandas as pd
@@ -153,14 +154,20 @@ def get_tag_labels(data_df, tag_col: str='tag', special_tags: list=[]):
     return tag_labels
 
 
-def storages_labels(intent_labels, tag_labels):
-    ipath = './intent_labels.txt'
-    tpath = './intent_labels.txt'
-
-    with open(ipath, 'w', encoding='utf-8') as f:
+def storages_labels(intent_labels, tag_labels, intent_save_path, tag_save_path):
+    with open(intent_save_path, 'w', encoding='utf-8') as f:
         for intent in intent_labels:
             f.writelines(intent + '\n')
 
-    with open(tpath, 'w', encoding='utf-8') as f:
+    with open(tag_save_path, 'w', encoding='utf-8') as f:
         for tag in tag_labels:
             f.writelines(tag + '\n')
+
+def read_file(input_file, quotechar=None):
+    """Read a tab separated value file."""
+    with open(input_file, 'r', encoding='utf-8') as f:
+        lines = []
+        for line in f:
+            lines.append(line.strip())
+        
+        return lines
