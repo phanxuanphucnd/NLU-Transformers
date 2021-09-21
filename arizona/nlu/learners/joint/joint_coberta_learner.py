@@ -189,13 +189,13 @@ class JointCoBERTaLearner():
                     self.model.zero_grad()
                     global_step += 1
 
-                if monitor_test:
-                    results = self.evaluate(test_dataset, eval_batch_size)
-                
-                if save_best_model and monitor_test:
-                    if best_score < results.get('intent_acc', 0.0):
-                        logger.info(f">>> Save the best model !")
-                        self.save_model(model_dir, model_name)
+            if monitor_test:
+                results = self.evaluate(test_dataset, eval_batch_size)
+            
+            if save_best_model and monitor_test:
+                if best_score < results.get('intent_acc', 0.0):
+                    logger.info(f"Save the best model !")
+                    self.save_model(model_dir, model_name)
 
             if 0 < max_steps < global_step:
                 epoch_iterator.close()
@@ -208,10 +208,10 @@ class JointCoBERTaLearner():
         eval_dataloader = DataLoader(dataset, sampler=eval_sampler, batch_size=batch_size)
 
         logger.info(f"➖➖➖➖➖ Running evaluation ➖➖➖➖➖")
-        logger.info(f" Num exmaples = {len(dataset)}")
-        logger.info(f" Batch size = {batch_size}")
+        logger.info(f"Num exmaples = {len(dataset)}")
+        logger.info(f"Batch size = {batch_size}")
 
-        eval_loss = 0
+        eval_loss = 0.0
         nb_eval_steps = 0
         intent_preds = None
         tag_preds = None

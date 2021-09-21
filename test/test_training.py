@@ -15,7 +15,7 @@ def test_training():
         tag_col='tags',
         special_intents=["UNK"],
         special_tags=["PAD", "UNK"],
-        max_seq_len=100,
+        max_seq_len=50,
         ignore_index=0,
         lowercase=True,
         rm_emoji=False,
@@ -25,7 +25,7 @@ def test_training():
     )
 
     test_dataset = JointNLUDataset(
-        mode='train',
+        mode='test',
         data_path='data/cometv3/test.csv',
         tokenizer='phobert',
         text_col='text',
@@ -33,7 +33,7 @@ def test_training():
         tag_col='tags',
         special_intents=["UNK"],
         special_tags=["PAD", "UNK"],
-        max_seq_len=100,
+        max_seq_len=50,
         ignore_index=0,
         lowercase=True,
         rm_emoji=False,
@@ -42,7 +42,7 @@ def test_training():
         balance_data=False
     )
 
-    learner = JointCoBERTaLearner(model_name_or_path='phobert', device='cpu')
+    learner = JointCoBERTaLearner(model_name_or_path='phobert')
     learner.train(
         train_dataset,
         test_dataset,
@@ -52,7 +52,9 @@ def test_training():
         n_epochs=1,
         logging_steps=200,
         save_steps=200,
-        view_model=True,
+        view_model=False,
+        monitor_test=True,
+        save_best_model=True,
         model_dir='./models',
         model_name='phobert.nlu'
     )
