@@ -18,6 +18,7 @@ class JointNLUDataset():
         self, 
         mode: str='train', 
         data_path: str=None, 
+        data_df: str=None,
         text_col: str=None, 
         intent_col: str=None, 
         tag_col: str=None, 
@@ -46,31 +47,52 @@ class JointNLUDataset():
         if isinstance(tokenizer, PreTrainedTokenizerBase):
             self.tokenizer = tokenizer
         else:
+            self.tokenizer_name = tokenizer
             self.tokenizer = get_from_registry(
                 tokenizer, TOKENIZERS_REGISTRY).from_pretrained(
                     MODEL_PATH_MAP.get(tokenizer, tokenizer)
                 )
         # TODO: Initialize processor
-        self.processor = JointDataProcessor(
-            mode=mode,
-            intent_labels=intent_labels, 
-            tag_labels=tag_labels
-        ).from_csv(
-            mode=self.mode,
-            data_path=data_path, 
-            text_col=text_col,
-            intent_col=intent_col,
-            tag_col=tag_col,
-            special_intents=special_intents,
-            special_tags=special_tags,
-            lowercase=lowercase,
-            rm_emoji=rm_emoji,
-            rm_url=rm_url,
-            rm_special_token=rm_special_token,
-            balance_data=balance_data,
-            size_per_class=size_per_class,
-            replace_mode=replace_mode
-        )
+        if data_path:
+            self.processor = JointDataProcessor(
+                mode=mode,
+                intent_labels=intent_labels, 
+                tag_labels=tag_labels
+            ).from_csv(
+                data_path=data_path, 
+                text_col=text_col,
+                intent_col=intent_col,
+                tag_col=tag_col,
+                special_intents=special_intents,
+                special_tags=special_tags,
+                lowercase=lowercase,
+                rm_emoji=rm_emoji,
+                rm_url=rm_url,
+                rm_special_token=rm_special_token,
+                balance_data=balance_data,
+                size_per_class=size_per_class,
+                replace_mode=replace_mode
+            )
+        elif data_df:
+            self.processor = JointDataProcessor(
+                mode=mode,
+                intent_labels=intent_labels, 
+                tag_labels=tag_labels
+            ).from_df(
+                data_df==data_df, 
+                text_col=text_col,
+                intent_col=intent_col,
+                tag_col=tag_col,
+                special_intents=special_intents,
+                special_tags=special_tags,
+                lowercase=lowercase,
+                rm_emoji=rm_emoji,
+                rm_url=rm_url,
+                rm_special_token=rm_special_token,
+                balance_data=balance_data,
+                size_per_class=size_per_class,
+                replace_mode=replace_mode
+            )
 
         self.intent_labels = intent_labels if intent_labels else self.processor.intent_labels
         self.tag_labels = tag_labels if tag_labels else self.processor.tag_labels

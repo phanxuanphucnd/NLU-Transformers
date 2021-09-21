@@ -2,10 +2,10 @@
 # Copyright (c) 2021 by Phuc Phan
 
 import os
-from re import I
 import torch
 import logging
 import numpy as np
+import pandas as pd
 
 from tqdm import tqdm, trange
 from transformers import AdamW, get_linear_schedule_with_warmup
@@ -15,7 +15,7 @@ from arizona.utils import set_seed
 from arizona.utils import compute_metrics
 from arizona.utils import get_from_registry
 from arizona.nlu.models.joint import JointCoBERTa
-from arizona.nlu.datasets import read_file, storages_labels
+from arizona.nlu.datasets.data_utils import normalize
 from arizona.nlu.datasets.joint_dataset import JointNLUDataset
 from arizona.utils import CONFIGS_REGISTRY, MODELS_REGISTRY, MODEL_PATH_MAP
 
@@ -97,18 +97,8 @@ class JointCoBERTaLearner():
 
         self.intent_label_list = train_dataset.intent_labels
         self.tag_label_list = train_dataset.tag_labels
-
-        # TODO: Save intent_labels and tag_labels
-        model_path = os.path.join(model_dir, model_name)
-        if not os.path.exists(model_path):
-            os.makedirs()
-        
-        storages_labels(
-            self.intent_label_list, 
-            self.tag_label_list, 
-            os.path.join(model_path, 'intent_labels.txt'), 
-            os.path.join(model_path, 'tag_labels.txt')
-        )
+        self.max_seq_len = train_dataset.max_seq_len
+        self.tokenizer = train_dataset.tokenizer_name
 
         train_dataset = train_dataset.build_dataset()
         test_dataset = test_dataset.build_dataset()
@@ -156,7 +146,7 @@ class JointCoBERTaLearner():
         scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=t_total)
 
         logger.info(f"➖➖➖➖➖ Running training ➖➖➖➖➖")
-        logger.info(f"Num examples = {len(train_dataset)}")
+        logger.info(f"Num examples = {len(self.train_dataset)}")
         logger.info(f"Num epochs = {n_epochs}")
         logger.info(f"Total train batch size = {train_batch_size}")
         logger.info(f"Gradient accumulation steps = {gradient_accumulation_steps}")
@@ -209,7 +199,7 @@ class JointCoBERTaLearner():
             if save_best_model and monitor_test:
                 if best_score < results.get('intent_acc', 0.0):
                     logger.info(f"Save the best model !")
-                    self.save_model(model_path)
+                    self.save_model(model_dir, model_name)
 
             if 0 < max_steps < global_step:
                 epoch_iterator.close()
@@ -309,13 +299,117 @@ class JointCoBERTaLearner():
         return results
 
 
-    def predict(self):
-        raise NotImplementedError
+    def predict(
+        self, 
+        sample, 
+        lowercase: bool=True, 
+        rm_emoji: bool=True, 
+        rm_url: bool=True, 
+        rm_special_token: bool=False, 
+    ):
+        self.model.eval()
+
+        sample = normalize(
+            sample, 
+            rm_emoji=rm_emoji,
+            rm_url=rm_url,
+            lowercase=lowercase,
+            rm_special_token=rm_special_token
+        )
+
+        if len(sample) == 0:
+            return None
+        
+        # TODO: Create a DataFrame
+        dict_sample = {
+            'text': sample,
+            'intent': 'UNK',
+            'tag': ' '.join(['O']*len(sample.split()))
+        }
+        data_df = pd.DataFrame.from_dict(dict_sample)
+        dataset = JointNLUDataset(
+            mode='test',
+            data_df=data_df,
+            text_col='text',
+            intent_col='intent',
+            tag_col='tag',
+            intent_labels=self.intent_label_list,
+            tag_labels=self.tag_label_list,
+            special_intents=[],
+            special_tags=[],
+            max_seq_len=self.max_seq_len,
+            tokenizer=self.tokenizer
+        )
+        dataset = dataset.build_dataset()
+
+        # TODO: Predict
+        sampler = SequentialSampler(dataset)
+        dataloader = DataLoader(dataset, sampler=sampler, batch_size=1)
+
+        all_tag_label_mask = None
+        intent_preds = None
+        tag_preds = None
+        self.pad_token_label_id = self.ignore_index
+
+        for batch in tqdm(dataloader, desc='Predicting'):
+            batch = tuple(t.to(self.device) for t in batch)
+            with torch.no_grad():
+                inputs = {
+                    'input_ids': batch[0],
+                    'attention_mask': batch[1],
+                    'token_type_ids': batch[2],
+                    'intent_label_ids': batch[3],
+                    'tag_labels_ids': batch[4]
+                }
+
+                outputs = self.model(**inputs)
+                _, (intent_logits, tag_logits) = outputs[:2]
+
+                # TODO: Intent prediction
+                if intent_preds is None:
+                    intent_preds = intent_logits.detach().cpu().numpy()
+                    out_intent_label_ids = inputs['intent_label_ids'].detach().cpu().numpy()
+                else:
+                    intent_preds = np.append(intent_preds, intent_logits.detach().cpu().numpy(), axis=0)
+
+                # TODO: Tag prediction
+                if tag_preds is None:
+                    if self.use_crf:
+                        tag_preds = np.array(self.model.crf.decode(tag_logits))
+                    else:
+                        tag_preds = tag_logits.detach().cpu().numpy()
+
+                    all_tag_label_mask = inputs["tag_labels_ids"].detach().cpu().numpy()
+                else:
+                    if self.use_crf:
+                        tag_preds = np.append(tag_preds, np.array(self.model.crf.decode(tag_logits)), axis=0)
+                    else:
+                        tag_preds = np.append(tag_preds, tag_logits.detach().cpu().numpy(), axis=0)
+
+                    all_tag_label_mask = np.append(all_tag_label_mask, inputs["tag_labels_ids"].detach().cpu().numpy(), axis=0)
+
+        # TODO: Intent results
+        intent_preds = np.argmax(intent_preds, axis=1)
+
+        # TODO: Tag results
+        if not self.use_crf:
+            tag_preds = np.argmax(tag_preds, axis=2)
+
+        tag_label_map = {i: label for i, label in enumerate(self.tag_label_list)}
+        tag_preds_list = [[] for _ in range(tag_preds.shape[0])]
+
+        for i in range(tag_preds.shape[0]):
+            for j in range(tag_preds.shape[1]):
+                if all_tag_label_mask[i, j] != self.pad_token_label_id:
+                    tag_preds_list[i].append(tag_label_map[tag_preds[i][j]])
+
+        return sample, intent_preds, tag_preds_list
 
     def process(self):
         raise NotImplementedError
 
-    def save_model(self, model_path):
+    def save_model(self, model_dir, model_name):
+        model_path = os.path.join(model_dir, model_name)
         if not os.path.exists(model_path):
             os.makedirs(model_path)
         
@@ -331,6 +425,8 @@ class JointCoBERTaLearner():
                 'tag_loss_coef': self.tag_loss_coef,
                 'intent_label_list': self.intent_label_list,
                 'tag_label_list': self.tag_label_list,
+                'max_seq_len': self.max_seq_len,
+                'tokenizer': self.tokenizer
             },
             os.path.join(model_path, 'training_args.bin')
         )
@@ -349,6 +445,8 @@ class JointCoBERTaLearner():
             self.tag_loss_coef = checkpoint.get('tag_loss_coef')
             self.intent_label_list = checkpoint.get('intent_label_list')
             self.tag_label_list = checkpoint.get('tag_label_list')
+            self.max_seq_len = checkpoint.get('max_seq_len')
+            self.tokenizer = checkpoint.get('tokenizer')
 
             self.model = self.model_class.from_pretrained(
                 model_path,

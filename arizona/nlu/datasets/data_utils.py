@@ -138,6 +138,7 @@ def get_intent_labels(data_df, intent_col: str='intent', special_intents: list=[
 
     if special_intents:
         special_intents.extend(intent_labels)
+        # special_intents = list(set(special_intents))
         return special_intents
     
     return intent_labels
@@ -153,6 +154,7 @@ def get_tag_labels(data_df, tag_col: str='tag', special_tags: list=[]):
     
     if special_tags:
         special_tags.extend(tag_labels)
+        # special_tags = list(set(special_tags))
         return special_tags
 
     return tag_labels
