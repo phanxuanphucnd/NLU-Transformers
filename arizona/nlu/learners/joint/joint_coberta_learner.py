@@ -426,7 +426,7 @@ class JointCoBERTaLearner():
             'tags': tag_preds_list[0],
             'tags_logits': tag_logits[0],
             'tags_index': tag_indexes[0],
-            'tags_softmax': tag_softmax[0]
+            'tags_score': tag_scores[0]
         }
 
         outfinal = {
@@ -455,7 +455,7 @@ class JointCoBERTaLearner():
         temp = 0
         words = outputs.get('text').split()
         tags = outputs['tags'].get('tags', [])
-        tags_probs = outputs['tags'].get('tags_softmax', [])
+        tags_probs = outputs['tags'].get('tags_score', [])
 
         for i in range(1, len(words)):
             ids.append(temp + len(words[i-1]) + 1)

@@ -20,7 +20,19 @@ def test_infer():
         rm_special_token=True
     )
 
-    for out in output:
-        print(out)
+    rasa_format_output = learner.process(
+        sample=text,
+        lowcase=True,
+        rm_emoji=True,
+        rm_url=True,
+        rm_special_token=True
+    )
+
+    from pprint import pprint
+    print("\n- Output function predict(): ")
+    pprint(output)
+
+    print("\n- Output function process(): ")
+    pprint(rasa_format_output)
 
 test_infer()
