@@ -160,7 +160,7 @@ class JointDataProcessor(object):
                 intent_col=intent_col, tag_col=tag_col
             )
             data_df = normalize_df(
-                data_df, rm_emoji=rm_emoji, rm_url=rm_url, 
+                data_df, column='text', rm_emoji=rm_emoji, rm_url=rm_url, 
                 rm_special_token=rm_special_token, lowercase=lowercase
             )
 

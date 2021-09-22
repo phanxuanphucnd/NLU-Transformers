@@ -322,9 +322,9 @@ class JointCoBERTaLearner():
         
         # TODO: Create a DataFrame
         dict_sample = {
-            'text': sample,
-            'intent': 'UNK',
-            'tag': ' '.join(['O']*len(sample.split()))
+            'text': [sample],
+            'intent': ['UNK'],
+            'tag': [' '.join(['O']*len(sample.split()))]
         }
         data_df = pd.DataFrame.from_dict(dict_sample)
         dataset = JointNLUDataset(

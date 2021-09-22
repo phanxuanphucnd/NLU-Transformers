@@ -79,7 +79,14 @@ def normalize(
 
     return txt.strip()
 
-def normalize_df(data_df, rm_emoji, rm_url, rm_special_token, lowercase):
+def normalize_df(
+    data_df, 
+    column: str='text', 
+    rm_emoji: bool=False, 
+    rm_url: bool=False, 
+    rm_special_token: bool=False, 
+    lowercase: bool=False
+):
     '''Normalize text data frame
     
     :param data_df: A dataframe
@@ -91,8 +98,11 @@ def normalize_df(data_df, rm_emoji, rm_url, rm_special_token, lowercase):
     :returns: A dataframe after normalized.
     '''
     data_df = data_df.dropna()
-    data_df["text"] = data_df["text"].apply(lambda x: normalize(x, rm_emoji=rm_emoji, 
-                                rm_url=rm_url, rm_special_token=rm_special_token, lowercase=lowercase))
+    data_df[column] = data_df[column].apply(
+        lambda x: normalize(
+            x, rm_emoji=rm_emoji, rm_url=rm_url, 
+            rm_special_token=rm_special_token, lowercase=lowercase)
+    )
 
     return data_df
 

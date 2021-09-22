@@ -73,13 +73,13 @@ class JointNLUDataset():
                 size_per_class=size_per_class,
                 replace_mode=replace_mode
             )
-        elif data_df:
+        elif data_df is not None:
             self.processor = JointDataProcessor(
                 mode=mode,
                 intent_labels=intent_labels, 
                 tag_labels=tag_labels
             ).from_df(
-                data_df==data_df, 
+                data_df=data_df, 
                 text_col=text_col,
                 intent_col=intent_col,
                 tag_col=tag_col,
