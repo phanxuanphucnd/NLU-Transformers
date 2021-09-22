@@ -55,7 +55,7 @@ class JointNLUDataset():
         # TODO: Initialize processor
         if data_path:
             self.processor = JointDataProcessor(
-                mode=mode,
+                mode=self.mode,
                 intent_labels=intent_labels, 
                 tag_labels=tag_labels
             ).from_csv(
@@ -75,7 +75,7 @@ class JointNLUDataset():
             )
         elif data_df is not None:
             self.processor = JointDataProcessor(
-                mode=mode,
+                mode=self.mode,
                 intent_labels=intent_labels, 
                 tag_labels=tag_labels
             ).from_df(

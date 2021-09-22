@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 from tqdm import tqdm, trange
+from scipy.special import softmax
 from transformers import AdamW, get_linear_schedule_with_warmup
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 
@@ -298,7 +299,6 @@ class JointCoBERTaLearner():
 
         return results
 
-
     def predict(
         self, 
         sample, 
@@ -306,6 +306,7 @@ class JointCoBERTaLearner():
         rm_emoji: bool=True, 
         rm_url: bool=True, 
         rm_special_token: bool=False, 
+        **kwargs
     ):
         self.model.eval()
 
@@ -368,7 +369,6 @@ class JointCoBERTaLearner():
                 # TODO: Intent prediction
                 if intent_preds is None:
                     intent_preds = intent_logits.detach().cpu().numpy()
-                    out_intent_label_ids = inputs['intent_label_ids'].detach().cpu().numpy()
                 else:
                     intent_preds = np.append(intent_preds, intent_logits.detach().cpu().numpy(), axis=0)
 
@@ -389,24 +389,116 @@ class JointCoBERTaLearner():
                     all_tag_label_mask = np.append(all_tag_label_mask, inputs["tag_labels_ids"].detach().cpu().numpy(), axis=0)
 
         # TODO: Intent results
-        intent_preds = np.argmax(intent_preds, axis=1)
+        intent_label_map = {i: label for i, label in enumerate(self.intent_label_list)}
+        intent_softmax = softmax(intent_preds, axis=1)
+        intent_index = np.argmax(intent_preds, axis=1)[0]
+        intent_score = np.max(intent_softmax, axis=1)[0]
+
+        intent_return = {
+            'name': intent_label_map[intent_index],
+            'index': intent_index,
+            'softmax_score': intent_score,
+            'intent_logits': intent_logits,
+            'intent_softmax': intent_softmax
+        }
 
         # TODO: Tag results
         if not self.use_crf:
             tag_preds = np.argmax(tag_preds, axis=2)
-
-        tag_label_map = {i: label for i, label in enumerate(self.tag_label_list)}
+        
         tag_preds_list = [[] for _ in range(tag_preds.shape[0])]
+        tag_pred_logits = [[] for _ in range(tag_preds.shape[0])]
+
+        tag_logits = tag_logits.detach().cpu().numpy()
+        tag_label_map = {i: label for i, label in enumerate(self.tag_label_list)}
 
         for i in range(tag_preds.shape[0]):
             for j in range(tag_preds.shape[1]):
                 if all_tag_label_mask[i, j] != self.pad_token_label_id:
                     tag_preds_list[i].append(tag_label_map[tag_preds[i][j]])
+                    tag_pred_logits[i].append(tag_logits[i][j])
+        
+        tag_softmax = softmax(tag_pred_logits, axis=2)
+        tag_indexes = np.argmax(tag_pred_logits, axis=2)
+        tag_scores = np.max(tag_softmax, axis=2)
 
-        return sample, intent_preds, tag_preds_list
+        tag_return = {
+            'tags': tag_preds_list[0],
+            'tags_logits': tag_logits[0],
+            'tags_index': tag_indexes[0],
+            'tags_softmax': tag_softmax[0]
+        }
 
-    def process(self):
-        raise NotImplementedError
+        outfinal = {
+            'text': sample,
+            'intent': intent_return,
+            'tags': tag_return
+        }
+
+        return outfinal
+
+    def convert_to_rasa_format(self, outputs):
+        rasa_format_output = {}
+        if not outputs:
+            return {}
+
+        rasa_format_output['text'] = outputs.get('text', '')
+        rasa_format_output['intent'] = {
+            'name': outputs['intent'].get('name', 'UNK'),
+            'confidence': outputs['intent'].get('softmax_score', 0.0),
+            'intent_logits': outputs['intent'].get('intent_logits', None)
+        }
+
+        
+        
+
+    def process(
+        self, 
+        sample, 
+        lowercase: bool=True, 
+        rm_emoji: bool=True, 
+        rm_url: bool=True, 
+        rm_special_token: bool=False,
+        **kwargs
+    ):
+        """Return the results same as the output of rasa format.
+
+        :param sample: The sample need to inference
+        :param lowercase: If True, lowercase data
+        :param rm_emoji: If True, replace the emoji token into <space> (" ")
+        :param rm_url: If True, replace the url token into <space> (" ")
+        :param rm_special_token: If True, replace the special token into <space> (" "),
+                                 special token included of punctuation token, characters without vietnamese characters
+
+        :returns: The results format rasa. Example: \n
+                    { \n
+                        "intent": { \n
+                            "name": query_kb, \n
+                            "confidence": 0.9999999\n
+                            }, \n
+                        "entities": [\n
+                           {\n
+                                'confidence': 0.9994359612464905,\n
+                                'end': 3,\n
+                                'entity': 'object_type',\n
+                                'extractor': 'OnetNet',\n
+                                'start': 0,\n
+                                'value': 'cũi'\n
+                            }, \n
+                        ],\n
+                        "text": cũi này còn k sh\n
+                     }\n
+        """
+
+        self.model.eval()
+
+        outputs = self.predict(
+            sample=sample, lowercase=lowercase, rm_emoji=rm_emoji, 
+            rm_url=rm_url, rm_special_token=rm_special_token
+        )
+        rasa_format_output = self.convert_to_rasa_format(outputs)
+        
+        return rasa_format_output
 
     def save_model(self, model_dir, model_name):
         model_path = os.path.join(model_dir, model_name)
@@ -460,7 +552,7 @@ class JointCoBERTaLearner():
             )
 
             self.model.to(self.device)
-            logger.info(f"******* Model Loaded *******")
+            logger.info(f"Model Loaded from path: `{model_path}` !")
 
         except:
-            raise Exception(f"Some model files might be missing...")
+            raise Exception(f"Some model files from model path: `{model_path}` might be missing...")
