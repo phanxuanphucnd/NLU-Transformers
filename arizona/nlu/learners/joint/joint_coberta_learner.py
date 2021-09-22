@@ -442,15 +442,118 @@ class JointCoBERTaLearner():
         if not outputs:
             return {}
 
-        rasa_format_output['text'] = outputs.get('text', '')
+        words = outputs.get('text', '')
+        rasa_format_output['text'] = words
         rasa_format_output['intent'] = {
             'name': outputs['intent'].get('name', 'UNK'),
             'confidence': outputs['intent'].get('softmax_score', 0.0),
             'intent_logits': outputs['intent'].get('intent_logits', None)
         }
 
-        
-        
+        # get index start words
+        ids = [0]
+        temp = 0
+        words = outputs.get('text').split()
+        tags = outputs['tags'].get('tags', [])
+        tags_probs = outputs['tags'].get('tags_softmax', [])
+
+        for i in range(1, len(words)):
+            ids.append(temp + len(words[i-1]) + 1)
+            temp = ids[-1]
+
+        ids.append(len(rasa_format_output["text"]) + 1)
+
+        entities = []
+        start = 0
+        entity = None
+        end = 0
+        ping = False
+
+        for i in range(len(tags)):
+            if ping == True:
+                if tags[i] == 'O':
+                    end = i
+                    entities.append({
+                        'entity': entity, 
+                        'start': ids[start], 
+                        'end': ids[end] - 1,                     
+                        'value': ' '.join(words[start:end]).strip(),
+                        'confidence': np.average(tags_probs[start:end]).item(),
+                        'extractor': self.__name__
+                    })
+                    ping = False
+
+                elif ("B-" in tags[i]) and (i == len(tags) - 1):
+                    end = i
+                    entities.append({
+                        'entity': entity, 
+                        'start': ids[start], 
+                        'end': ids[end] - 1,                     
+                        'value': ' '.join(words[start:end]).strip(),
+                        'confidence': np.average(tags_probs[start:end]).item(),
+                        'extractor': self.__name__
+                    })
+
+                    start = i
+                    end = i + 1
+                    entity = tags[i][2:]
+
+                    entities.append({
+                        'entity': entity, 
+                        'start': ids[start], 
+                        'end': ids[end] - 1,
+                        'value': ' '.join(words[start:end]).strip(),
+                        'confidence': np.average(tags_probs[start:end]).item(),
+                        'extractor': self.__name__
+                    })
+
+                elif "B-" in tags[i]:
+                    end = i
+                    entities.append({
+                        'entity': entity, 
+                        'start': ids[start], 
+                        'end': ids[end] - 1,                     
+                        'value': ' '.join(words[start:end]).strip(),
+                        'confidence': np.average(tags_probs[start:end]).item(),
+                        'extractor': self.__name__
+                    })
+                    ping = True
+                    start = i
+                    entity = tags[i][2:]
+
+                elif i == len(tags) - 1:
+                    end = i + 1
+                    entities.append({
+                        'entity': entity, 
+                        'start': ids[start], 
+                        'end': ids[end] - 1,
+                        'value': ' '.join(words[start:end]).strip(),
+                        'confidence': np.average(tags_probs[start:end]).item(),
+                        'extractor': self.__name__
+                    })
+
+            else:
+                if "B-" in tags[i] and i == len(tags) - 1:
+                    start = i
+                    end = i + 1
+                    entity = tags[i][2:]
+                    entities.append({
+                        'entity': entity, 
+                        'start': ids[start], 
+                        'end': ids[end] - 1,
+                        'value': ' '.join(words[start:end]).strip(),
+                        'confidence': np.average(tags_probs[start:end]).item(),
+                        'extractor': self.__name__
+                    })
+
+                elif "B-" in tags[i]:
+                    start = i
+                    entity = tags[i][2:]
+                    ping = True
+
+        rasa_format_output["entities"] = entities
+
+        return rasa_format_output
 
     def process(
         self, 
