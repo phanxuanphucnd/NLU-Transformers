@@ -146,7 +146,7 @@ class JointCoBERTaLearner():
         scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=t_total)
 
         logger.info(f"➖➖➖➖➖ Running training ➖➖➖➖➖")
-        logger.info(f"Num examples = {len(self.train_dataset)}")
+        logger.info(f"Num examples = {len(train_dataset)}")
         logger.info(f"Num epochs = {n_epochs}")
         logger.info(f"Total train batch size = {train_batch_size}")
         logger.info(f"Gradient accumulation steps = {gradient_accumulation_steps}")
