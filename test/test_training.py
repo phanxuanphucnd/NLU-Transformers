@@ -51,14 +51,14 @@ def test_training():
         train_batch_size=128,
         eval_batch_size=256,
         learning_rate=5e-5,
-        n_epochs=100,
+        n_epochs=50,
         logging_steps=200,
         save_steps=200,
         view_model=False,
         monitor_test=True,
         save_best_model=True,
         model_dir='./models',
-        model_name='phobert.nlu'
+        model_name='phobert-nlu'
     )
 
 test_training()

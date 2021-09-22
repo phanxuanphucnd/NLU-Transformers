@@ -7,8 +7,11 @@ import logging
 import numpy as np
 import pandas as pd
 
+from typing import Union
+from torch.utils import data
 from tqdm import tqdm, trange
 from scipy.special import softmax
+from torch.utils.data import TensorDataset
 from transformers import AdamW, get_linear_schedule_with_warmup
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 
@@ -208,7 +211,10 @@ class JointCoBERTaLearner():
 
         return global_step, tr_loss / global_step
     
-    def evaluate(self, dataset: JointNLUDataset, batch_size: int=64):
+    def evaluate(self, dataset: Union[JointNLUDataset, TensorDataset], batch_size: int=64):
+        if isinstance(dataset, JointNLUDataset):
+            dataset = dataset.build_dataset()
+            
         eval_sampler = SequentialSampler(dataset)
         eval_dataloader = DataLoader(dataset, sampler=eval_sampler, batch_size=batch_size)
 
