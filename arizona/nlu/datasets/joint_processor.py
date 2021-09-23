@@ -193,9 +193,10 @@ class JointDataProcessor(object):
             for s in tag.split():
                 tag_labels.append(self.tag_labels.index(s) if s in self.tag_labels else self.tag_labels.index("UNK"))
 
-            assert len(words) == len(tag_labels)
-
-            examples.append(InputExample(guid=guid, words=words, intent_label=intent_label, tag_labels=tag_labels))
+            if len(words) != len(tag_labels):
+                logger.warning(f"The length for word token != tag_label tokens in sample: {text}")
+            else:
+                examples.append(InputExample(guid=guid, words=words, intent_label=intent_label, tag_labels=tag_labels))
 
         return examples
 

@@ -9,7 +9,7 @@ def test_training():
 
     train_dataset = JointNLUDataset(
         mode='train',
-        data_path='data/cometv3/train.csv',
+        data_path='data/kcloset/train.csv',
         tokenizer='phobert',
         text_col='text',
         intent_col='intent',
@@ -27,7 +27,7 @@ def test_training():
 
     test_dataset = JointNLUDataset(
         mode='test',
-        data_path='data/cometv3/test.csv',
+        data_path='data/kcloset/test.csv',
         tokenizer='phobert',
         text_col='text',
         intent_col='intent',
@@ -53,8 +53,6 @@ def test_training():
         eval_batch_size=256,
         learning_rate=5e-5,
         n_epochs=200,
-        logging_steps=200,
-        save_steps=200,
         view_model=False,
         monitor_test=True,
         save_best_model=True,
