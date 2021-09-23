@@ -12,11 +12,6 @@ def test_evaluate():
 
     learner = JointCoBERTaLearner(model_name_or_path='phobert')
     learner.load_model(model_path)
-
-    print('==============================')
-    print("\n\n")
-    print({i: label for i, label in enumerate(learner.tag_label_list)})
-    print('==============================')
     
     test_dataset = JointNLUDataset(
         mode='test',
