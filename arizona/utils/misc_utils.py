@@ -8,7 +8,8 @@ import numpy as np
 from typing import Any
 from transformers import RobertaConfig, BertConfig
 from transformers import AutoTokenizer, BertTokenizer
-from seqeval.metrics import precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report
+from seqeval.metrics import precision_score as seqeval_precision, recall_score as seqeval_recall, f1_score as seqeval_f1
 
 from arizona.nlu.models import JointCoBERTa
 
@@ -67,8 +68,10 @@ def set_seed(SEED):
 
 def compute_metrics(intent_preds, intent_labels, tag_preds, tag_labels):
     assert len(intent_preds) == len(intent_labels) == len(tag_preds) == len(tag_labels)
+    
     results = {}
-    intent_result = get_intent_acc(intent_preds, intent_labels)
+
+    intent_result = get_intent_metric(intent_preds, intent_labels)
     tag_result = get_tag_metrics(tag_preds, tag_labels)
     sementic_result = get_sentence_frame_acc(intent_preds, intent_labels, tag_preds, tag_labels)
 
@@ -78,26 +81,38 @@ def compute_metrics(intent_preds, intent_labels, tag_preds, tag_labels):
 
     return results
 
-
 def get_tag_metrics(preds, labels):
     assert len(preds) == len(labels)
     return {
-        "tag_precision": precision_score(labels, preds),
-        "tag_recall": recall_score(labels, preds),
-        "tag_f1": f1_score(labels, preds)
+        "tag_precision": seqeval_precision(labels, preds),
+        "tag_recall": seqeval_recall(labels, preds),
+        "tag_f1": seqeval_f1(labels, preds)
     }
 
+def get_intent_metric(y_true, y_pred):
+    """Function to get metrics evaluation.
+    
+    :param y_pred: Ground truth (correct) target values.
+    :param y_true: Estimated targets as returned by a classifier.
+    
+    :returns: acc, f1, precision, recall
+    """
 
-def get_intent_acc(preds, labels):
-    acc = (preds == labels).mean()
-    return {
-        "intent_acc": acc
+    acc       = accuracy_score(y_true, y_pred)
+    f1        = f1_score(y_true, y_pred, average="weighted")
+    precision = precision_score(y_true, y_pred, average="weighted")
+    recall    = recall_score(y_true, y_pred,  average="weighted")
+    report    = classification_report(y_true, y_pred)
+
+    results = {
+        "intent_acc": acc,
+        "intent_f1": f1,
+        "intent_precision": precision,
+        "intent_recall": recall,
+        "intent_report": report
     }
 
-
-def read_prediction_text(args):
-    return [text.strip() for text in open(os.path.join(args.pred_dir, args.pred_input_file), 'r', encoding='utf-8')]
-
+    return results
 
 def get_sentence_frame_acc(intent_preds, intent_labels, tag_preds, tag_labels):
     """For the cases that intent and all the tags are correct (in one sentence)"""
@@ -114,9 +129,10 @@ def get_sentence_frame_acc(intent_preds, intent_labels, tag_preds, tag_labels):
                 one_sent_result = False
                 break
         tag_result.append(one_sent_result)
+
     tag_result = np.array(tag_result)
 
     sementic_acc = np.multiply(intent_result, tag_result).mean()
     return {
-        "sementic_frame_acc": sementic_acc
+        "mean_acc_score": sementic_acc
     }

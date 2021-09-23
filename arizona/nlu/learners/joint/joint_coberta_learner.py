@@ -211,7 +211,12 @@ class JointCoBERTaLearner():
 
         return global_step, tr_loss / global_step
     
-    def evaluate(self, dataset: Union[JointNLUDataset, TensorDataset], batch_size: int=64):
+    def evaluate(
+        self, 
+        dataset: Union[JointNLUDataset, TensorDataset], 
+        batch_size: int=64, 
+        view_classification_report: bool=False
+    ):
         if isinstance(dataset, JointNLUDataset):
             dataset = dataset.build_dataset()
             
@@ -275,12 +280,12 @@ class JointCoBERTaLearner():
 
         
         eval_loss = eval_loss / nb_eval_steps
-        results = {
-            'loss': eval_loss
-        }
 
         # TODO: Intent results
+        intent_label_map = {i: label for i, label in enumerate(self.intent_labels)}
         intent_preds = np.argmax(intent_preds, axis=1)
+        intent_pred_list = [intent_label_map[i] for i in intent_preds]
+        intent_label_list = [intent_label_map[i] for i in out_intent_label_ids]
 
         # TODO: Tag results
         if not self.use_crf:
@@ -296,12 +301,29 @@ class JointCoBERTaLearner():
                     out_tag_labels[i].append(tag_label_map[out_tag_labels_ids[i][j]])
                     tag_preds_list[i].append(tag_label_map[tag_preds[i][j]])
 
-        total_results = compute_metrics(intent_preds, out_intent_label_ids, tag_preds_list, out_tag_labels)
-        results.update(total_results)
+        total_results = compute_metrics(intent_pred_list, intent_label_list, tag_preds_list, out_tag_labels)
+
+        results = {}
+        results['loss'] = eval_loss
+        results['mean_acc_score'] = total_results['mean_acc_score']
+        results['intent_acc'] = total_results['intent_acc']
+        results['intent_f1'] = total_results['intent_f1']
+        results['intent_precision'] = total_results['intent_precision']
+        results['intent_recall'] = total_results['intent_recall']
+        results['tag_f1'] = total_results['tag_f1']
+        results['tag_precision'] = total_results['tag_precision']
+        results['tag_recall'] = total_results['tag_recall']
+
+        if view_classification_report:
+            logger.info(f"View Intent classification report:")
+            print(total_results['intent_report'])
 
         logger.info(f"➖➖➖➖➖ Evaluation results ➖➖➖➖➖")
-        for key in sorted(results.keys()):
-            logger.info(f"{key} = {str(results[key])}")
+
+        fmt = '{:>{width}s} ' + ' {:>9.{digits}f}'
+        for key in results.keys():
+            result = (key, results[key])
+            logger.info(fmt.format(*result, width=20, digits=4))
 
         return results
 
