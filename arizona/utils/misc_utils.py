@@ -9,7 +9,10 @@ from typing import Any
 from transformers import RobertaConfig, BertConfig
 from transformers import AutoTokenizer, BertTokenizer
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report
-from seqeval.metrics import precision_score as seqeval_precision, recall_score as seqeval_recall, f1_score as seqeval_f1
+from seqeval.metrics import ( 
+    precision_score as seqeval_precision, recall_score as seqeval_recall, 
+    f1_score as seqeval_f1, classification_report as seqeval_report
+)
 
 from arizona.nlu.models import JointCoBERTa
 
@@ -86,7 +89,8 @@ def get_tag_metrics(preds, labels):
     return {
         "tag_precision": seqeval_precision(labels, preds),
         "tag_recall": seqeval_recall(labels, preds),
-        "tag_f1": seqeval_f1(labels, preds)
+        "tag_f1": seqeval_f1(labels, preds),
+        "tag_report": seqeval_report(labels, preds)
     }
 
 def get_intent_metric(y_true, y_pred):

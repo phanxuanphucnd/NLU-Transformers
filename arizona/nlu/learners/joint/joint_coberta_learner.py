@@ -202,6 +202,7 @@ class JointCoBERTaLearner():
             
             if save_best_model and monitor_test:
                 if best_score < results.get('intent_acc', 0.0):
+                    best_score = results.get('intent_acc', 0.0)
                     logger.info(f"Save the best model !")
                     self.save_model(model_dir, model_name)
 
@@ -215,7 +216,7 @@ class JointCoBERTaLearner():
         self, 
         dataset: Union[JointNLUDataset, TensorDataset], 
         batch_size: int=64, 
-        view_classification_report: bool=False
+        view_report: bool=False
     ):
         if isinstance(dataset, JointNLUDataset):
             dataset = dataset.build_dataset()
@@ -299,7 +300,10 @@ class JointCoBERTaLearner():
             for j in range(out_tag_labels_ids.shape[1]):
                 if out_tag_labels_ids[i, j] != self.pad_token_label_id:
                     out_tag_labels[i].append(tag_label_map[out_tag_labels_ids[i][j]])
-                    tag_preds_list[i].append(tag_label_map[tag_preds[i][j]])
+                    if tag_label_map[tag_preds[i][j]] == 'PAD':
+                        tag_preds_list[i].append('O')
+                    else:
+                        tag_preds_list[i].append(tag_label_map[tag_preds[i][j]])
 
         total_results = compute_metrics(intent_pred_list, intent_label_list, tag_preds_list, out_tag_labels)
 
@@ -314,16 +318,19 @@ class JointCoBERTaLearner():
         results['tag_precision'] = total_results['tag_precision']
         results['tag_recall'] = total_results['tag_recall']
 
-        if view_classification_report:
-            logger.info(f"View Intent classification report:")
-            print(total_results['intent_report'])
-
         logger.info(f"➖➖➖➖➖ Evaluation results ➖➖➖➖➖")
 
         fmt = '{:>{width}s} ' + ' {:>9.{digits}f}'
         for key in results.keys():
             result = (key, results[key])
             logger.info(fmt.format(*result, width=20, digits=4))
+
+        if view_report:
+            logger.info(f"View Intent Report:")
+            print(total_results['intent_report'])
+
+            logger.info(f"View Tags Report:")
+            print(total_results['tag_report'])
 
         return results
 

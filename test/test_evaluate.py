@@ -33,8 +33,6 @@ def test_evaluate():
         balance_data=False
     )
 
-    out = learner.evaluate(test_dataset, batch_size=256,view_classification_report=True)
-    from pprint import pprint
-    pprint(out)
+    out = learner.evaluate(test_dataset, batch_size=256, view_report=True)
 
 test_evaluate()
