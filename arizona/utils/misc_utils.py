@@ -90,7 +90,7 @@ def get_tag_metrics(preds, labels):
         "tag_precision": seqeval_precision(labels, preds),
         "tag_recall": seqeval_recall(labels, preds),
         "tag_f1": seqeval_f1(labels, preds),
-        "tag_report": seqeval_report(labels, preds)
+        "tag_report": seqeval_report(labels, preds, digits=4)
     }
 
 def get_intent_metric(y_true, y_pred):
@@ -106,7 +106,7 @@ def get_intent_metric(y_true, y_pred):
     f1        = f1_score(y_true, y_pred, average="weighted")
     precision = precision_score(y_true, y_pred, average="weighted")
     recall    = recall_score(y_true, y_pred,  average="weighted")
-    report    = classification_report(y_true, y_pred)
+    report    = classification_report(y_true, y_pred, digits=4)
 
     results = {
         "intent_acc": acc,
