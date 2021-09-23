@@ -8,12 +8,10 @@ import numpy as np
 import pandas as pd
 
 from typing import Union
-from torch.utils import data
 from tqdm import tqdm, trange
 from scipy.special import softmax
-from torch.utils.data import TensorDataset
 from transformers import AdamW, get_linear_schedule_with_warmup
-from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
+from torch.utils.data import DataLoader, RandomSampler, SequentialSampler, TensorDataset
 
 from arizona.utils import set_seed
 from arizona.utils import compute_metrics
@@ -102,7 +100,7 @@ class JointCoBERTaLearner():
         self.intent_label_list = train_dataset.intent_labels
         self.tag_label_list = train_dataset.tag_labels
         self.max_seq_len = train_dataset.max_seq_len
-        self.tokenizer = train_dataset.tokenizer_name
+        self.tokenizer_name = train_dataset.tokenizer_name
 
         train_dataset = train_dataset.build_dataset()
         test_dataset = test_dataset.build_dataset()
@@ -345,7 +343,7 @@ class JointCoBERTaLearner():
             special_intents=[],
             special_tags=[],
             max_seq_len=self.max_seq_len,
-            tokenizer=self.tokenizer
+            tokenizer=self.tokenizer_name
         )
         dataset = dataset.build_dataset()
 
@@ -627,7 +625,7 @@ class JointCoBERTaLearner():
                 'intent_label_list': self.intent_label_list,
                 'tag_label_list': self.tag_label_list,
                 'max_seq_len': self.max_seq_len,
-                'tokenizer': self.tokenizer
+                'tokenizer_name': self.tokenizer_name
             },
             os.path.join(model_path, 'training_args.bin')
         )
@@ -636,7 +634,7 @@ class JointCoBERTaLearner():
 
     def load_model(self, model_path: str=None):
         if not os.path.exists(model_path):
-            raise Exception(f"Model doesn't exists or broken !")
+            raise Exception(f"Model path: `{model_path}` doesn't exists or broken !")
         
         try:
             checkpoint = torch.load(os.path.join(model_path, 'training_args.bin'))
@@ -647,7 +645,7 @@ class JointCoBERTaLearner():
             self.intent_label_list = checkpoint.get('intent_label_list')
             self.tag_label_list = checkpoint.get('tag_label_list')
             self.max_seq_len = checkpoint.get('max_seq_len')
-            self.tokenizer = checkpoint.get('tokenizer')
+            self.tokenizer_name = checkpoint.get('tokenizer_name')
 
             self.model = self.model_class.from_pretrained(
                 model_path,

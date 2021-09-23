@@ -7,8 +7,8 @@ from arizona.nlu.learners.joint import JointCoBERTaLearner
 
 def test_infer():
 
-    text = 'xe đẩy giá bnh shop'
-    model_path = 'models/phobert.nlu'
+    text = 'Xe bảo hành 1 năm nếu lỗi nhà sx ah b'
+    model_path = 'models/phobert-nlu'
 
     learner = JointCoBERTaLearner(model_name_or_path='phobert')
     learner.load_model(model_path)
@@ -29,10 +29,10 @@ def test_infer():
     )
 
     from pprint import pprint
-    print("\n- Output function predict(): ")
+    print("\n>>>>> Output function predict(): ")
     pprint(output)
 
-    print("\n- Output function process(): ")
+    print("\n>>>>> Output function process(): ")
     pprint(rasa_format_output)
 
 test_infer()

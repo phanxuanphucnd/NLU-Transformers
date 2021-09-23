@@ -54,15 +54,14 @@ class JointNLUDataset():
                 )
         # TODO: Initialize processor
         if data_path:
-            self.processor = JointDataProcessor(
+            self.processor = JointDataProcessor.from_csv(
                 mode=self.mode,
-                intent_labels=intent_labels, 
-                tag_labels=tag_labels
-            ).from_csv(
                 data_path=data_path, 
                 text_col=text_col,
                 intent_col=intent_col,
                 tag_col=tag_col,
+                intent_labels=intent_labels,
+                tag_labels=tag_labels,
                 special_intents=special_intents,
                 special_tags=special_tags,
                 lowercase=lowercase,
@@ -74,15 +73,14 @@ class JointNLUDataset():
                 replace_mode=replace_mode
             )
         elif data_df is not None:
-            self.processor = JointDataProcessor(
+            self.processor = JointDataProcessor.from_df(
                 mode=self.mode,
-                intent_labels=intent_labels, 
-                tag_labels=tag_labels
-            ).from_df(
                 data_df=data_df, 
                 text_col=text_col,
                 intent_col=intent_col,
                 tag_col=tag_col,
+                intent_labels=intent_labels,
+                tag_labels=tag_labels,
                 special_intents=special_intents,
                 special_tags=special_tags,
                 lowercase=lowercase,

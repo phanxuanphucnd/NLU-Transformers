@@ -6,6 +6,7 @@ from arizona.nlu.learners.joint import JointCoBERTaLearner
 
 
 def test_training():
+
     train_dataset = JointNLUDataset(
         mode='train',
         data_path='data/cometv3/train.csv',
@@ -32,7 +33,7 @@ def test_training():
         intent_col='intent',
         tag_col='tags',
         intent_labels=train_dataset.intent_labels,
-        tag_labels=train_dataset.intent_labels,
+        tag_labels=train_dataset.tag_labels,
         special_intents=["UNK"],
         special_tags=["PAD", "UNK"],
         max_seq_len=50,

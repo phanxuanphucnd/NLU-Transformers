@@ -68,7 +68,7 @@ class JointDataProcessor(object):
     """Processor for the JointCoBERTa dataset."""
     def __init__(
         self, 
-        mode: str='train',
+        mode: str=None,
         data_df: DataFrame=None, 
         intent_col: str='intent',
         tag_col: str='tag',
@@ -83,7 +83,7 @@ class JointDataProcessor(object):
         self.data_df = data_df
         self.intent_labels = intent_labels
         self.tag_labels = tag_labels
-        if intent_labels is None and data_df is not None:
+        if self.intent_labels is None and data_df is not None:
             if mode.lower() == 'train':
                 self.intent_labels = get_intent_labels(data_df, intent_col, special_intents)
             else:
@@ -91,7 +91,7 @@ class JointDataProcessor(object):
                     f"With `mode=valid` or `mode=test` the `intent_labels` parameter must be not None. "
                     f"You can setup `intent_labels=train_dataset.intent_labels` in `JointNLUDataset()` class to solve this problem."
                 )
-        if tag_labels is None and data_df is not None:
+        if self.tag_labels is None and data_df is not None:
             if mode.lower() == 'train':
                 self.tag_labels = get_tag_labels(data_df, tag_col, special_tags)
             else:
@@ -103,10 +103,13 @@ class JointDataProcessor(object):
     @classmethod
     def from_csv(
         cls, 
+        mode: str='train',
         data_path: str=None, 
         text_col: str=None, 
         intent_col: str=None, 
         tag_col: str=None, 
+        intent_labels: list=None,
+        tag_labels: list=None,
         lowercase: bool=True, 
         rm_emoji: bool=True, 
         rm_url: bool=True, 
@@ -125,18 +128,22 @@ class JointDataProcessor(object):
             raise ValueError(f"The parameter `data_path` must be not None value !")
 
         return cls.from_df(
-            data_df, text_col, intent_col, tag_col, 
-            lowercase, rm_emoji, rm_url, rm_special_token, 
-            balance_data, size_per_class, replace_mode
+            mode, data_df, text_col, intent_col, tag_col, 
+            intent_labels, tag_labels, lowercase, rm_emoji, 
+            rm_url, rm_special_token, balance_data, 
+            size_per_class, replace_mode
         )
     
     @classmethod
     def from_df(
         cls,
+        mode: str='train',
         data_df: DataFrame=None,
         text_col: str='text', 
         intent_col: str='intent', 
         tag_col: str='tag', 
+        intent_labels: list=None,
+        tag_labels: list=None,
         lowercase: bool=True, 
         rm_emoji: bool=True, 
         rm_url: bool=True, 
@@ -167,7 +174,7 @@ class JointDataProcessor(object):
         else:
             raise ValueError(f"The parameter `data_df` must be not None value !")
 
-        return cls(data_df=data_df)
+        return cls(mode=mode, data_df=data_df, intent_labels=intent_labels, tag_labels=tag_labels)
 
     def _create_examples(self, texts, intents, tags, set_type):
         """Creates examples for the training and dev sets."""
