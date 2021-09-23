@@ -40,6 +40,7 @@ class JointCoBERTaLearner():
         self.dropout = kwargs.pop('dropout', 0.1)
         self.use_crf = kwargs.pop('use_crf', True)
         self.ignore_index = kwargs.pop('ignore_index', 0)
+        self.intent_loss_coef = kwargs.pop('intent_loss_coef', 1.0)
         self.tag_loss_coef = kwargs.pop('tag_loss_coef', 1.0)
         self.pad_token_label_id = self.ignore_index
 
@@ -97,8 +98,8 @@ class JointCoBERTaLearner():
         logger.info(f"Description tag classes: {len(train_dataset.tag_labels)} - "
                     f"{train_dataset.processor.tag_labels}")
 
-        self.intent_label_list = train_dataset.intent_labels
-        self.tag_label_list = train_dataset.tag_labels
+        self.intent_labels = train_dataset.intent_labels
+        self.tag_labels = train_dataset.tag_labels
         self.max_seq_len = train_dataset.max_seq_len
         self.tokenizer_name = train_dataset.tokenizer_name
 
@@ -115,9 +116,10 @@ class JointCoBERTaLearner():
                 dropout=self.dropout,
                 use_crf=self.use_crf,
                 ignore_index=self.ignore_index,
+                intent_loss_coef=self.intent_loss_coef,
                 tag_loss_coef=self.tag_loss_coef,
-                intent_label_list=self.intent_label_list,
-                tag_label_list=self.tag_label_list
+                intent_labels=self.intent_labels,
+                tag_labels=self.tag_labels
             )
 
         self.model.to(self.device)
@@ -284,17 +286,17 @@ class JointCoBERTaLearner():
         if not self.use_crf:
             tag_preds = np.argmax(tag_preds, axis=2)
 
-        tag_label_map = {i: label for i, label in enumerate(self.tag_label_list)}
-        out_tag_label_list = [[] for _ in range(out_tag_labels_ids.shape[0])]
+        tag_label_map = {i: label for i, label in enumerate(self.tag_labels)}
+        out_tag_labels = [[] for _ in range(out_tag_labels_ids.shape[0])]
         tag_preds_list = [[] for _ in range(out_tag_labels_ids.shape[0])]
 
         for i in range(out_tag_labels_ids.shape[0]):
             for j in range(out_tag_labels_ids.shape[1]):
                 if out_tag_labels_ids[i, j] != self.pad_token_label_id:
-                    out_tag_label_list[i].append(tag_label_map[out_tag_labels_ids[i][j]])
+                    out_tag_labels[i].append(tag_label_map[out_tag_labels_ids[i][j]])
                     tag_preds_list[i].append(tag_label_map[tag_preds[i][j]])
 
-        total_results = compute_metrics(intent_preds, out_intent_label_ids, tag_preds_list, out_tag_label_list)
+        total_results = compute_metrics(intent_preds, out_intent_label_ids, tag_preds_list, out_tag_labels)
         results.update(total_results)
 
         logger.info(f"➖➖➖➖➖ Evaluation results ➖➖➖➖➖")
@@ -338,8 +340,8 @@ class JointCoBERTaLearner():
             text_col='text',
             intent_col='intent',
             tag_col='tag',
-            intent_labels=self.intent_label_list,
-            tag_labels=self.tag_label_list,
+            intent_labels=self.intent_labels,
+            tag_labels=self.tag_labels,
             special_intents=[],
             special_tags=[],
             max_seq_len=self.max_seq_len,
@@ -393,7 +395,7 @@ class JointCoBERTaLearner():
                     all_tag_label_mask = np.append(all_tag_label_mask, inputs["tag_labels_ids"].detach().cpu().numpy(), axis=0)
 
         # TODO: Intent results
-        intent_label_map = {i: label for i, label in enumerate(self.intent_label_list)}
+        intent_label_map = {i: label for i, label in enumerate(self.intent_labels)}
         intent_softmax = softmax(intent_preds, axis=1)
         intent_index = np.argmax(intent_preds, axis=1)[0]
         intent_score = np.max(intent_softmax, axis=1)[0]
@@ -414,7 +416,7 @@ class JointCoBERTaLearner():
         tag_pred_logits = [[] for _ in range(tag_preds.shape[0])]
 
         tag_logits = tag_logits.detach().cpu().numpy()
-        tag_label_map = {i: label for i, label in enumerate(self.tag_label_list)}
+        tag_label_map = {i: label for i, label in enumerate(self.tag_labels)}
 
         for i in range(tag_preds.shape[0]):
             for j in range(tag_preds.shape[1]):
@@ -621,9 +623,10 @@ class JointCoBERTaLearner():
                 'dropout': self.dropout,
                 'use_crf': self.use_crf,
                 'ignore_index': self.ignore_index,
+                'intent_loss_coef': self.intent_loss_coef,
                 'tag_loss_coef': self.tag_loss_coef,
-                'intent_label_list': self.intent_label_list,
-                'tag_label_list': self.tag_label_list,
+                'intent_labels': self.intent_labels,
+                'tag_labels': self.tag_labels,
                 'max_seq_len': self.max_seq_len,
                 'tokenizer_name': self.tokenizer_name
             },
@@ -641,9 +644,10 @@ class JointCoBERTaLearner():
             self.dropout = checkpoint.get('dropout')
             self.use_crf = checkpoint.get('use_crf')
             self.ignore_index = checkpoint.get('ignore_index')
-            self.tag_loss_coef = checkpoint.get('tag_loss_coef')
-            self.intent_label_list = checkpoint.get('intent_label_list')
-            self.tag_label_list = checkpoint.get('tag_label_list')
+            self.intent_loss_coef = checkpoint.get('intent_loss_coef', 1.0)
+            self.tag_loss_coef = checkpoint.get('tag_loss_coef', 1.0)
+            self.intent_labels = checkpoint.get('intent_labels')
+            self.tag_labels = checkpoint.get('tag_labels')
             self.max_seq_len = checkpoint.get('max_seq_len')
             self.tokenizer_name = checkpoint.get('tokenizer_name')
 
@@ -653,9 +657,10 @@ class JointCoBERTaLearner():
                 dropout=self.dropout,
                 use_crf=self.use_crf,
                 ignore_index=self.ignore_index,
+                intent_loss_coef=self.intent_loss_coef,
                 tag_loss_coef=self.tag_loss_coef,
-                intent_label_list=self.intent_label_list,
-                tag_label_list=self.tag_label_list
+                intent_labels=self.intent_labels,
+                tag_labels=self.tag_labels
             )
 
             self.model.to(self.device)

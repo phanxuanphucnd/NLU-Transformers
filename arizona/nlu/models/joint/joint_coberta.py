@@ -14,10 +14,11 @@ class JointCoBERTa(RobertaPreTrainedModel):
         self, 
         config: PretrainedConfig, 
         dropout: float, 
-        intent_label_list: list, 
-        tag_label_list: list, 
+        intent_labels: list, 
+        tag_labels: list, 
         use_crf: bool=True, 
         ignore_index: int=0, 
+        intent_loss_coef: float=1.0,
         tag_loss_coef: float=1.0, 
         **kwargs
     ):
@@ -25,12 +26,13 @@ class JointCoBERTa(RobertaPreTrainedModel):
 
         # self.args = args
         self.kwargs = kwargs
-        self.num_intent_labels = len(intent_label_list)
-        self.num_tag_labels = len(tag_label_list)
+        self.num_intent_labels = len(intent_labels)
+        self.num_tag_labels = len(tag_labels)
         self.coberta = RobertaModel(config)
         self.dropout = dropout
         self.use_crf = use_crf
         self.ignore_index = ignore_index
+        self.intent_loss_coef = intent_loss_coef
         self.tag_loss_coef = tag_loss_coef
 
         self.intent_classifier = IntentClassifier(
@@ -60,7 +62,7 @@ class JointCoBERTa(RobertaPreTrainedModel):
         total_loss = 0
 
         # TODO: Intent softmax
-        if tag_labels_ids is not None:
+        if intent_label_ids is not None:
             if self.num_intent_labels == 1:
                 intent_loss_func = nn.MSELoss()
                 intent_loss = intent_loss_func(intent_logits.view(-1), intent_label_ids.view(-1))
@@ -70,7 +72,7 @@ class JointCoBERTa(RobertaPreTrainedModel):
                     intent_logits.view(-1, self.num_intent_labels), intent_label_ids.view(-1)
                 )
 
-            total_loss += intent_loss
+            total_loss += self.intent_loss_coef * intent_loss
         
         # TODO: tag softmax
         if tag_labels_ids is not None:

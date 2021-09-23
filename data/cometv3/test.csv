@@ -30,7 +30,7 @@ Cái này là túi nhai silicon hả shop,ask_confirm,O O O B-inform#object_type
 Và ghế ngồi bằng da hay vải vậy s,ask_confirm,O B-inform#object_type O O O O B-ask_confirm#material O O
 cái này có bảo hành ko em,request#guarantee,O O O O O O O
 e lại muốn lấy thêm cái treo cũi của papa mama,inform,O O O O O O B-inform#object_type I-inform#object_type O B-inform#brand I-inform#brand
-Xe bảo hành 1 năm nếu lỗi nhà sx ah b,ask_confirm,O B-ask_confirm#guarantee I-ask_confirm#guarantee I-ask_confirm#guarantee I-ask_confirm#guarantee O O O O O O
+Xe bảo hành 1 năm nếu lỗi nhà sx ah b,ask_confirm,B-inform#object_type B-ask_confirm#guarantee I-ask_confirm#guarantee I-ask_confirm#guarantee I-ask_confirm#guarantee O O O O O O
 Bộ chế biến lúc trước báo giá 389 mà chị,ask_confirm,B-inform#object_type I-inform#object_type I-inform#object_type O O O O B-ask_confirm#price O O
 Nôi này nẰm đến đc mấy tháng vậy ạ,request#age_of_use,B-inform#object_type O O O O O O O O
 K phải là thép ạ,deny,O O O B-deny#material O
