@@ -45,19 +45,19 @@ def test_training():
         balance_data=False
     )
 
-    learner = JointCoBERTaLearner(model_name_or_path='phobert', intent_loss_coef=0.9, tag_loss_coef=1.0)
+    learner = JointCoBERTaLearner(model_type='coberta', model_name_or_path='models/coberta-mini', intent_loss_coef=0.9, tag_loss_coef=1.0)
     learner.train(
         train_dataset,
         test_dataset,
         train_batch_size=128,
         eval_batch_size=256,
         learning_rate=5e-5,
-        n_epochs=200,
+        n_epochs=100,
         view_model=False,
         monitor_test=True,
         save_best_model=True,
         model_dir='./models',
-        model_name='phobert-nlu'
+        model_name='coberta-ks'
     )
 
 test_training()

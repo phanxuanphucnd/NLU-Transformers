@@ -25,7 +25,6 @@ class EarlyStopping:
         self.best_score = None
         self.early_stop = False
         self.val_loss_min = np.Inf
-        self.mode
 
     def __call__(self, val_loss, model, args, save_model_dir, save_model_name):
         if args.tuning_metric == "loss":
