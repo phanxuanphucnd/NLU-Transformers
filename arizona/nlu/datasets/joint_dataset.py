@@ -126,9 +126,9 @@ class JointNLUDataset():
 
     def convert_examples_to_features(
         self,
-        examples,
-        max_seq_len,
-        tokenizer,
+        examples: list=None,
+        max_seq_len: int=50,
+        tokenizer: PreTrainedTokenizerBase=None,
         pad_token_label_id=-100,
         cls_token_segment_id=0,
         pad_token_segment_id=0,

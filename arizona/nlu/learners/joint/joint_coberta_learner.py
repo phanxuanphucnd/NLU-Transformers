@@ -12,10 +12,12 @@ from tqdm import tqdm, trange
 from scipy.special import softmax
 from transformers import AdamW, get_linear_schedule_with_warmup
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler, TensorDataset
+from arizona import early_stopping
 
 from arizona.utils import set_seed
 from arizona.utils import compute_metrics
 from arizona.utils import get_from_registry
+from arizona.early_stopping import EarlyStopping
 from arizona.nlu.models.joint import JointCoBERTa
 from arizona.nlu.datasets.data_utils import normalize
 from arizona.nlu.datasets.joint_dataset import JointNLUDataset
@@ -42,6 +44,12 @@ class JointCoBERTaLearner():
         self.ignore_index = kwargs.pop('ignore_index', 0)
         self.intent_loss_coef = kwargs.pop('intent_loss_coef', 1.0)
         self.tag_loss_coef = kwargs.pop('tag_loss_coef', 1.0)
+        self.use_intent_context_concat = kwargs.pop('use_intent_context_concat', False)
+        self.use_intent_context_attention = kwargs.pop('use_intent_context_attention', True)
+        self.attention_embedding_dim = kwargs.pop('attention_embedding_dim', 200)
+        self.max_seq_len = kwargs.pop('max_seq_len', 50)
+        self.intent_embedding_type = kwargs.pop('intent_embedding_type', 'soft')
+        self.use_attention_mask = kwargs.pop('use_attention_mask', False)
         self.pad_token_label_id = self.ignore_index
 
         self.model = model
@@ -83,6 +91,8 @@ class JointCoBERTaLearner():
         max_grad_norm: float=1.0,
         max_steps: int=-1,
         warmup_steps: int=0,
+        early_stopping: int=50,
+        tuning_metric: str='loss',
         view_model: bool=True, 
         monitor_test: bool=True,
         save_best_model: bool=True,
@@ -116,6 +126,12 @@ class JointCoBERTaLearner():
                 dropout=self.dropout,
                 use_crf=self.use_crf,
                 ignore_index=self.ignore_index,
+                use_intent_context_concat=self.use_intent_context_concat,
+                use_intent_context_attention=self.use_intent_context_attention,
+                attention_embedding_dim=self.attention_embedding_dim, 
+                max_seq_len=self.max_seq_len,
+                intent_embedding_type=self.intent_embedding_type,
+                use_attention_mask=self.use_attention_mask,
                 intent_loss_coef=self.intent_loss_coef,
                 tag_loss_coef=self.tag_loss_coef,
                 intent_labels=self.intent_labels,
@@ -163,8 +179,21 @@ class JointCoBERTaLearner():
         self.model.zero_grad()
 
         train_iterator = trange(int(n_epochs), desc="Epoch")
+        early_stopping = EarlyStopping(patience=early_stopping)
 
         best_score = 0
+
+        training_args = {
+            'dropout': self.dropout,
+            'use_crf': self.use_crf,
+            'ignore_index': self.ignore_index,
+            'intent_loss_coef': self.intent_loss_coef,
+            'tag_loss_coef': self.tag_loss_coef,
+            'intent_labels': self.intent_labels,
+            'tag_labels': self.tag_labels,
+            'max_seq_len': self.max_seq_len,
+            'tokenizer_name': self.tokenizer_name
+        }
         
         for _ in train_iterator:
             epoch_iterator = tqdm(train_dataloader, desc='Iteration')
@@ -199,6 +228,11 @@ class JointCoBERTaLearner():
 
             if monitor_test:
                 results = self.evaluate(test_dataset, eval_batch_size)
+                early_stopping(results[tuning_metric], self.model, training_args, model_dir, model_name)
+                if early_stopping.early_stop:
+                    logger.info(f"-"*100)
+                    logger.info(f"Exiting from training early.")
+                    break
             
             if save_best_model and monitor_test:
                 if best_score < results.get('intent_acc', 0.0):
@@ -652,6 +686,12 @@ class JointCoBERTaLearner():
                 'dropout': self.dropout,
                 'use_crf': self.use_crf,
                 'ignore_index': self.ignore_index,
+                'use_intent_context_concat': self.use_intent_context_concat,
+                'use_intent_context_attention': self.use_intent_context_attention,
+                'attention_embedding_dim': self.attention_embedding_dim, 
+                'max_seq_len': self.max_seq_len,
+                'intent_embedding_type': self.intent_embedding_type,
+                'use_attention_mask': self.use_attention_mask,
                 'intent_loss_coef': self.intent_loss_coef,
                 'tag_loss_coef': self.tag_loss_coef,
                 'intent_labels': self.intent_labels,
@@ -670,26 +710,39 @@ class JointCoBERTaLearner():
         
         try:
             checkpoint = torch.load(os.path.join(model_path, 'training_args.bin'))
-            self.dropout = checkpoint.get('dropout')
-            self.use_crf = checkpoint.get('use_crf')
-            self.ignore_index = checkpoint.get('ignore_index')
-            self.intent_loss_coef = checkpoint.get('intent_loss_coef', 1.0)
-            self.tag_loss_coef = checkpoint.get('tag_loss_coef', 1.0)
-            self.intent_labels = checkpoint.get('intent_labels')
-            self.tag_labels = checkpoint.get('tag_labels')
-            self.max_seq_len = checkpoint.get('max_seq_len')
-            self.tokenizer_name = checkpoint.get('tokenizer_name')
+            # self.dropout = checkpoint.get('dropout')
+            # self.use_crf = checkpoint.get('use_crf')
+            # self.ignore_index = checkpoint.get('ignore_index')
+            # self.use_intent_context_concat = checkpoint.get('use_intent_context_concat')
+            # self.use_intent_context_attention = checkpoint.get('use_intent_context_attention')
+            # self.attention_embedding_dim = checkpoint.get('attention_embedding_dim')
+            # self.max_seq_len = checkpoint.get('max_seq_len')
+            # self.intent_embedding_type = checkpoint.get('intent_embedding_type')
+            # self.use_attention_mask = checkpoint.get('use_attention_mask')
+            # self.intent_loss_coef = checkpoint.get('intent_loss_coef', 1.0)
+            # self.tag_loss_coef = checkpoint.get('tag_loss_coef', 1.0)
+            # self.intent_labels = checkpoint.get('intent_labels')
+            # self.tag_labels = checkpoint.get('tag_labels')
+            # self.max_seq_len = checkpoint.get('max_seq_len')
+            # self.tokenizer_name = checkpoint.get('tokenizer_name')
 
             self.model = self.model_class.from_pretrained(
                 model_path,
                 config=self.config,
-                dropout=self.dropout,
-                use_crf=self.use_crf,
-                ignore_index=self.ignore_index,
-                intent_loss_coef=self.intent_loss_coef,
-                tag_loss_coef=self.tag_loss_coef,
                 intent_labels=self.intent_labels,
-                tag_labels=self.tag_labels
+                tag_labels=self.tag_labels,
+                **checkpoint
+                # dropout=self.dropout,
+                # use_crf=self.use_crf,
+                # ignore_index=self.ignore_index,
+                # use_intent_context_concat=self.use_intent_context_concat,
+                # use_intent_context_attention=self.use_intent_context_attention,
+                # attention_embedding_dim=self.attention_embedding_dim, 
+                # max_seq_len=self.max_seq_len,
+                # intent_embedding_type=self.intent_embedding_type,
+                # use_attention_mask=self.use_attention_mask,
+                # intent_loss_coef=self.intent_loss_coef,
+                # tag_loss_coef=self.tag_loss_coef,
             )
 
             self.model.to(self.device)

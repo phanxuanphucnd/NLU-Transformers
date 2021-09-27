@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2021 by Phuc Phan
 
+import torch
+import logging
 import torch.nn as nn
 
 from transformers.configuration_utils import PretrainedConfig
@@ -8,6 +10,8 @@ from transformers.models.roberta.modeling_roberta import RobertaModel, RobertaPr
 
 from arizona.nlu.modules.crf_module import CRF
 from arizona.nlu.modules.decoder_module import IntentClassifier, SequenceTaggerClassifier
+
+logger = logging.getLogger(__name__)
 
 class JointCoBERTa(RobertaPreTrainedModel):
     def __init__(
@@ -17,23 +21,42 @@ class JointCoBERTa(RobertaPreTrainedModel):
         intent_labels: list, 
         tag_labels: list, 
         use_crf: bool=True, 
+        use_intent_context_concat: bool=False,
+        use_intent_context_attention: bool=True,
+        attention_embedding_dim: int=200, 
         ignore_index: int=0, 
+        max_seq_len: int=50,
+        intent_embedding_type: str='soft',
+        use_attention_mask: bool=False,
         intent_loss_coef: float=1.0,
         tag_loss_coef: float=1.0, 
         **kwargs
     ):
         super(JointCoBERTa, self).__init__(config)
 
-        # self.args = args
         self.kwargs = kwargs
         self.num_intent_labels = len(intent_labels)
         self.num_tag_labels = len(tag_labels)
         self.coberta = RobertaModel(config)
         self.dropout = dropout
         self.use_crf = use_crf
+        self.use_intent_context_concat = use_intent_context_concat
+        self.use_intent_context_attention = use_intent_context_attention
+        self.attention_embedding_dim = attention_embedding_dim
         self.ignore_index = ignore_index
+        self.max_seq_len = max_seq_len
+        self.use_attention_mask = use_attention_mask
         self.intent_loss_coef = intent_loss_coef
         self.tag_loss_coef = tag_loss_coef
+
+        if intent_embedding_type not in ['soft', 'hard']:
+            logger.warning(
+                f"The `embedding_intent_type` must be in ['soft', 'hard']."
+                f"Setup the default: `embedding_intent_type='soft'`."
+            )
+            self.intent_embedding_type = 'soft'
+        else:
+            self.intent_embedding_type = intent_embedding_type
 
         self.intent_classifier = IntentClassifier(
             input_dim=config.hidden_size, 
@@ -41,8 +64,13 @@ class JointCoBERTa(RobertaPreTrainedModel):
             dropout=dropout
         )
         self.tag_classifier = SequenceTaggerClassifier(
-            input_dim=config.hidden_size,
-            num_tag_labels=self.num_tag_labels,
+            input_dim=config.hidden_size, 
+            num_tag_labels=self.num_tag_labels, 
+            num_intent_labels=self.num_intent_labels, 
+            use_intent_context_concat=self.use_intent_context_concat, 
+            use_intent_context_attention=self.use_intent_context_attention, 
+            max_seq_len=self.max_seq_len, 
+            attention_embedding_dim=self.attention_embedding_dim, 
             dropout=dropout
         )
 
@@ -57,7 +85,22 @@ class JointCoBERTa(RobertaPreTrainedModel):
         pooled_output = outputs[1]             # [CLS] token
 
         intent_logits = self.intent_classifier(pooled_output)
-        tag_logits = self.tag_classifier(sequence_output)
+
+        if not self.use_attention_mask:
+            tmp_attention_mask = None
+        else:
+            tmp_attention_mask = attention_mask
+        
+        if self.intent_embedding_type.lower() == 'hard':
+            hard_intent_logits = torch.zeros(intent_logits.shape)
+            for i, sample in enumerate(intent_logits):
+                max_idx = torch.argmax(sample)
+                hard_intent_logits[i][max_idx] = 1
+            tag_logits = self.tag_classifier(sequence_output, hard_intent_logits, tmp_attention_mask)
+        else:
+            tag_logtis = self.tag_classifier(sequence_output, intent_logits, tmp_attention_mask)
+        
+        # tag_logits = self.tag_classifier(sequence_output)
 
         total_loss = 0
 
@@ -95,4 +138,4 @@ class JointCoBERTa(RobertaPreTrainedModel):
         outputs = ((intent_logits, tag_logits), ) + outputs[2:] # add hidden states and attention if they are here
         outputs = (total_loss, ) + outputs                      # (loss), logits, (hidden_states), (attentions)
         
-        return outputs 
+        return outputs # (loss), logits, (hidden_states), (attentions) # Logits is a tuple of intent and slot logits

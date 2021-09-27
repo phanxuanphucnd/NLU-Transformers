@@ -7,7 +7,7 @@ import numpy as np
 
 from typing import Any
 from transformers import RobertaConfig, BertConfig
-from transformers import AutoTokenizer, BertTokenizer
+from transformers import AutoTokenizer, BertTokenizer, RobertaTokenizer
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report
 from seqeval.metrics import ( 
     precision_score as seqeval_precision, recall_score as seqeval_recall, 
@@ -19,6 +19,7 @@ from arizona.nlu.models import JointCoBERTa
 CONFIGS_REGISTRY = {
     'coberta': RobertaConfig, 
     'phobert': RobertaConfig, 
+    'roberta': RobertaConfig,
     'vinai/phobert-base': RobertaConfig,
     'vinai/phobert-large': RobertaConfig,
     'bert': BertConfig, 
@@ -27,6 +28,7 @@ CONFIGS_REGISTRY = {
 MODELS_REGISTRY = {
     'coberta': JointCoBERTa,
     'phobert': JointCoBERTa, 
+    'roberta': JointCoBERTa,
     'vinai/phobert-base': JointCoBERTa,
     'vinai/phobert-large': JointCoBERTa,
     'bert': JointCoBERTa,
@@ -35,6 +37,7 @@ MODELS_REGISTRY = {
 TOKENIZERS_REGISTRY = {
     'coberta': AutoTokenizer,
     'phobert': AutoTokenizer, 
+    'roberta': RobertaTokenizer,
     'vinai/phobert-base': AutoTokenizer,
     'vinai/phobert-large': AutoTokenizer,
     'bert': BertTokenizer,
