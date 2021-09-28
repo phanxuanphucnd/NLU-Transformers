@@ -245,8 +245,13 @@ class JointCoBERTaLearner():
                         break
             
             if save_best_model and monitor_test:
-                if best_score < results.get('intent_acc', 0.0):
-                    best_score = results.get('intent_acc', 0.0)
+                if tuning_metric == 'loss':
+                    tmp_score = -results.get(tuning_metric, 0.0)
+                else:
+                    tmp_score = results.get(tuning_metric, 0.0)
+                    
+                if best_score < tmp_score:
+                    best_score = tmp_score
                     logger.info(f"Save the best model !")
                     self.save_model(model_dir, model_name)
 

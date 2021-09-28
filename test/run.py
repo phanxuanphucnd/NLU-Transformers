@@ -64,12 +64,12 @@ def test_training():
         train_batch_size=128,
         eval_batch_size=256,
         learning_rate=3e-5,
-        n_epochs=1,
+        n_epochs=50,
         view_model=True,
         monitor_test=True,
         save_best_model=True,
         model_dir='./models',
-        model_name='run-phobert-ks',
+        model_name='phobert-cometv3',
         gpu_id=0
     )
 
