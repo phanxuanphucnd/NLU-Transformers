@@ -185,7 +185,10 @@ class JointCoBERTaLearner():
         if early_stopping:
             early_stopping = EarlyStopping(patience=early_stopping)
 
-        best_score = 0
+        if tuning_metric == 'loss':
+            best_score = -1000
+        else:
+            best_score = 0
 
         training_args = {
             'dropout': self.dropout,
@@ -249,7 +252,7 @@ class JointCoBERTaLearner():
                     tmp_score = -results.get(tuning_metric, 0.0)
                 else:
                     tmp_score = results.get(tuning_metric, 0.0)
-                    
+
                 if best_score < tmp_score:
                     best_score = tmp_score
                     logger.info(f"Save the best model !")
