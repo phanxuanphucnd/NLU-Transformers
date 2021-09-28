@@ -46,8 +46,8 @@ def test_training():
     )
 
     learner = JointCoBERTaLearner(
-        model_type='coberta',
-        model_name_or_path='models/coberta-tini', 
+        model_type='phobert',
+        model_name_or_path='vinai/phobert-base', 
         intent_loss_coef=0.4, 
         tag_loss_coef=0.6,
         use_intent_context_concat=False,
@@ -56,19 +56,20 @@ def test_training():
         max_seq_len=50,
         intent_embedding_type='hard',
         use_attention_mask=False,
+        # device='cpu'
     )
     learner.train(
         train_dataset,
         test_dataset,
         train_batch_size=32,
         eval_batch_size=64,
-        learning_rate=3e-5,
+        learning_rate=4e-5,
         n_epochs=100,
         view_model=True,
         monitor_test=True,
         save_best_model=True,
         model_dir='./models',
-        model_name='coberta-ks',
+        model_name='phobert-ks',
         gpu_id=1
     )
 

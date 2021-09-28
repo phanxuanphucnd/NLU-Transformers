@@ -62,5 +62,5 @@ class EarlyStopping:
         model_to_save = model.module if hasattr(model, 'module') else model
         model_to_save.save_pretrained(model_path)
 
-        torch.save(args, os.path.join(args.model_dir, "training_args.bin"))
+        torch.save(args, os.path.join(save_model_dir, "training_args.bin"))
         self.val_loss_min = val_loss

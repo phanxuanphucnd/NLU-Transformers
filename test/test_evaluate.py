@@ -16,7 +16,7 @@ def test_evaluate():
     test_dataset = JointNLUDataset(
         mode='test',
         data_path=test_path,
-        tokenizer='phobert',
+        tokenizer='coberta',
         text_col='text',
         intent_col='intent',
         tag_col='tags',

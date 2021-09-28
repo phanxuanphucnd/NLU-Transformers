@@ -62,7 +62,7 @@ class JointCoBERTaLearner():
 
         self.config_class = get_from_registry(self.model_type, CONFIGS_REGISTRY)
         self.config = self.config_class.from_pretrained(
-            MODEL_PATH_MAP.get(self.model_type, model_name_or_path), 
+            MODEL_PATH_MAP.get(self.model_name_or_path, model_name_or_path), 
             finetuning_task='syllabel-level'
         )
         self.model_class = get_from_registry(self.model_type, MODELS_REGISTRY)
@@ -119,7 +119,7 @@ class JointCoBERTaLearner():
         if not self.model and not self.model_name_or_path:
             raise ValueError(f"Either parameter `model` or `model_name_or_path` must be not None value !")
         elif not self.model:
-            model_ = MODEL_PATH_MAP.get(self.model_type, self.model_name_or_path)
+            model_ = MODEL_PATH_MAP.get(self.model_name_or_path, self.model_name_or_path)
             self.model = self.model_class.from_pretrained(
                 model_,
                 config=self.config,
