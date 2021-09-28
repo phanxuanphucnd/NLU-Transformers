@@ -44,7 +44,7 @@ TOKENIZERS_REGISTRY = {
 }
 
 MODEL_PATH_MAP = {
-    'coberta': 'models/coberta-mini',
+    'coberta': 'models/coberta-tini',
     'phobert': 'vinai/phobert-base',
     'bert': 'bert-base-uncased',
 }

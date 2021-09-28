@@ -46,7 +46,8 @@ def test_training():
     )
 
     learner = JointCoBERTaLearner(
-        model_name_or_path='phobert', 
+        model_type='coberta',
+        model_name_or_path='models/coberta-tini', 
         intent_loss_coef=0.4, 
         tag_loss_coef=0.6,
         use_intent_context_concat=False,
