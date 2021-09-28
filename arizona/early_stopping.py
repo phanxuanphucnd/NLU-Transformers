@@ -27,14 +27,14 @@ class EarlyStopping:
         self.val_loss_min = np.Inf
 
     def __call__(self, val_loss, model, args, save_model_dir, save_model_name):
-        if args.tuning_metric == "loss":
+        if args['tuning_metric'] == "loss":
             score = -val_loss
         else:
             score = val_loss
 
         if self.best_score is None:
             self.best_score = score
-            self.save_checkpoint(val_loss, model, args)
+            self.save_checkpoint(val_loss, model, args, save_model_dir, save_model_name)
         elif score < self.best_score:
             self.counter += 1
             logger.info(f"EarlyStopping counter: {self.counter} out of {self.patience}")
@@ -48,11 +48,11 @@ class EarlyStopping:
     def save_checkpoint(self, val_loss, model, args, save_model_dir, save_model_name):
         """Saves model when validation loss decreases or accuracy/f1 increases."""
         if self.verbose:
-            if args.tuning_metric == "loss":
+            if args['tuning_metric'] == "loss":
                 logger.info(f"Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...")
             else:
                 logger.info(
-                    f"{args.tuning_metric} increased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ..."
+                    f"{args['tuning_metric']} increased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ..."
                 )
 
         model_path = os.path.join(save_model_dir, save_model_name)

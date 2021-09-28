@@ -37,7 +37,7 @@ class JointCoBERTa(RobertaPreTrainedModel):
         self.kwargs = kwargs
         self.num_intent_labels = len(intent_labels)
         self.num_tag_labels = len(tag_labels)
-        self.coberta = RobertaModel(config)
+        self.roberta = RobertaModel(config)
         self.dropout = dropout
         self.use_crf = use_crf
         self.use_intent_context_concat = use_intent_context_concat
@@ -78,7 +78,7 @@ class JointCoBERTa(RobertaPreTrainedModel):
             self.crf = CRF(num_tags=self.num_tag_labels, batch_first=True)
 
     def forward(self, input_ids, attention_mask, token_type_ids, intent_label_ids, tag_labels_ids):
-        outputs = self.coberta(
+        outputs = self.roberta(
             input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids, 
         ) # sequence_output, pooled_output, (hidden_states), (attentions)
         sequence_output = outputs[0]
@@ -98,9 +98,7 @@ class JointCoBERTa(RobertaPreTrainedModel):
                 hard_intent_logits[i][max_idx] = 1
             tag_logits = self.tag_classifier(sequence_output, hard_intent_logits, tmp_attention_mask)
         else:
-            tag_logtis = self.tag_classifier(sequence_output, intent_logits, tmp_attention_mask)
-        
-        # tag_logits = self.tag_classifier(sequence_output)
+            tag_logits = self.tag_classifier(sequence_output, intent_logits, tmp_attention_mask)
 
         total_loss = 0
 

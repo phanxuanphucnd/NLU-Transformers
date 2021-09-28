@@ -12,7 +12,6 @@ from tqdm import tqdm, trange
 from scipy.special import softmax
 from transformers import AdamW, get_linear_schedule_with_warmup
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler, TensorDataset
-from arizona import early_stopping
 
 from arizona.utils import set_seed
 from arizona.utils import compute_metrics
@@ -64,7 +63,7 @@ class JointCoBERTaLearner():
         self.config_class = get_from_registry(self.model_type, CONFIGS_REGISTRY)
         self.config = self.config_class.from_pretrained(
             MODEL_PATH_MAP.get(model_name_or_path, model_name_or_path), 
-            finetuning_task='nlu'
+            finetuning_task='syllabel-level'
         )
         self.model_class = get_from_registry(self.model_type, MODELS_REGISTRY)
 
@@ -98,6 +97,7 @@ class JointCoBERTaLearner():
         save_best_model: bool=True,
         model_dir: str='./model',
         model_name: str='coberta-mini.nlu',
+        gpu_id: int=0,
         **kwargs
     ):
         logger.info(f"➖➖➖➖➖ Dataset Info ➖➖➖➖➖")
@@ -138,6 +138,8 @@ class JointCoBERTaLearner():
                 tag_labels=self.tag_labels
             )
 
+        torch.cuda.set_device(gpu_id)
+        logger.info(f"Current device: {torch.cuda.current_device()}")
         self.model.to(self.device)
 
         if view_model:
@@ -192,7 +194,8 @@ class JointCoBERTaLearner():
             'intent_labels': self.intent_labels,
             'tag_labels': self.tag_labels,
             'max_seq_len': self.max_seq_len,
-            'tokenizer_name': self.tokenizer_name
+            'tokenizer_name': self.tokenizer_name,
+            'tuning_metric': tuning_metric
         }
         
         for _ in train_iterator:
