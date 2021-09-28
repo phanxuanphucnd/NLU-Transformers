@@ -61,16 +61,16 @@ def test_training():
     learner.train(
         train_dataset,
         test_dataset,
-        train_batch_size=32,
-        eval_batch_size=64,
-        learning_rate=4e-5,
-        n_epochs=100,
+        train_batch_size=128,
+        eval_batch_size=256,
+        learning_rate=3e-5,
+        n_epochs=1,
         view_model=True,
         monitor_test=True,
         save_best_model=True,
         model_dir='./models',
-        model_name='phobert-ks',
-        gpu_id=1
+        model_name='run-phobert-ks',
+        gpu_id=0
     )
 
 test_training()

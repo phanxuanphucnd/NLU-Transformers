@@ -7,16 +7,16 @@ from arizona.nlu.learners.joint import JointCoBERTaLearner
 
 def test_evaluate():
 
-    test_path = 'data/kcloset/test.csv'
-    model_path = 'models/phobert-nlu'
+    test_path = 'data/cometv3/test.csv'
+    model_path = 'models/run-phobert-ks'
 
-    learner = JointCoBERTaLearner(model_name_or_path='phobert')
+    learner = JointCoBERTaLearner(model_type='phobert')
     learner.load_model(model_path)
     
     test_dataset = JointNLUDataset(
         mode='test',
         data_path=test_path,
-        tokenizer='coberta',
+        tokenizer='phobert',
         text_col='text',
         intent_col='intent',
         tag_col='tags',

@@ -26,15 +26,15 @@ class EarlyStopping:
         self.early_stop = False
         self.val_loss_min = np.Inf
 
-    def __call__(self, val_loss, model, args, save_model_dir, save_model_name):
-        if args['tuning_metric'] == "loss":
+    def __call__(self, tuning_metric, val_loss, model, args, save_model_dir, save_model_name):
+        if tuning_metric == "loss":
             score = -val_loss
         else:
             score = val_loss
 
         if self.best_score is None:
             self.best_score = score
-            self.save_checkpoint(val_loss, model, args, save_model_dir, save_model_name)
+            self.save_checkpoint(tuning_metric, val_loss, model, args, save_model_dir, save_model_name)
         elif score < self.best_score:
             self.counter += 1
             logger.info(f"EarlyStopping counter: {self.counter} out of {self.patience}")
@@ -42,17 +42,17 @@ class EarlyStopping:
                 self.early_stop = True
         else:
             self.best_score = score
-            self.save_checkpoint(val_loss, model, args, save_model_dir, save_model_name)
+            self.save_checkpoint(tuning_metric, val_loss, model, args, save_model_dir, save_model_name)
             self.counter = 0
 
-    def save_checkpoint(self, val_loss, model, args, save_model_dir, save_model_name):
+    def save_checkpoint(self, tuning_metric, val_loss, model, args, save_model_dir, save_model_name):
         """Saves model when validation loss decreases or accuracy/f1 increases."""
         if self.verbose:
-            if args['tuning_metric'] == "loss":
+            if tuning_metric == "loss":
                 logger.info(f"Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...")
             else:
                 logger.info(
-                    f"{args['tuning_metric']} increased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ..."
+                    f"{tuning_metric} increased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ..."
                 )
 
         model_path = os.path.join(save_model_dir, save_model_name)
@@ -62,5 +62,5 @@ class EarlyStopping:
         model_to_save = model.module if hasattr(model, 'module') else model
         model_to_save.save_pretrained(model_path)
 
-        torch.save(args, os.path.join(save_model_dir, "training_args.bin"))
+        torch.save(args, os.path.join(model_path, "training_args.bin"))
         self.val_loss_min = val_loss

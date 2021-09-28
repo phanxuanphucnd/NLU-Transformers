@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2021 by Phuc Phan
 
+from datetime import datetime
+
 from arizona.nlu.datasets import JointNLUDataset
 from arizona.nlu.learners.joint import JointCoBERTaLearner
 
 
 def test_training():
+
+    now = datetime.now()
 
     train_dataset = JointNLUDataset(
         mode='train',
@@ -72,5 +76,7 @@ def test_training():
         model_name='phobert-ks',
         gpu_id=1
     )
+
+    print(f"Training time: {datetime.now() - now}")
 
 test_training()
