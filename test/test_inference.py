@@ -12,9 +12,9 @@ def test_infer():
     now = datetime.now()
 
     text = 'Xe bảo hành 1 năm nếu lỗi nhà sx ah b'
-    model_path = 'models/phobert-nlu'
+    model_path = 'models/coberta-kcloset'
 
-    learner = JointCoBERTaLearner(model_name_or_path='phobert')
+    learner = JointCoBERTaLearner(model_type='coberta-tiny')
     learner.load_model(model_path)
     output = learner.predict(
         sample=text,
@@ -36,7 +36,7 @@ def test_infer():
     print("\n>>>>> Output function predict(): ")
     pprint(output)
 
-    print(f"Training time: {datetime.now() - now}")
+    print(f"\n\nTraining time: {datetime.now() - now}")
 
     print("\n>>>>> Output function process(): ")
     pprint(rasa_format_output)

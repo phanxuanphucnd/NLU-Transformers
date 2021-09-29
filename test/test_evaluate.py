@@ -7,11 +7,16 @@ from arizona.nlu.learners.joint import JointCoBERTaLearner
 
 def test_evaluate():
 
-    test_path = 'data/cometv3/test.csv'
-    model_path = 'models/run-phobert-ks'
+    test_path = 'data/kcloset/test.csv'
+    model_path = './models/phobert-hatt-cometv3'
 
     learner = JointCoBERTaLearner(model_type='phobert')
     learner.load_model(model_path)
+
+
+    a = sum([p.numel() for p in learner.model.parameters()])
+
+    print(f"\nThe total parameters of the model is {a}")
     
     test_dataset = JointNLUDataset(
         mode='test',
