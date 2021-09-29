@@ -53,7 +53,7 @@ Named: `JointCoberta`.
 
 
 ```js
->>> pip install dist/arizona-0.0.1-py3-none-any.whl
+>>> pip install dist/arizona-0.1.0-py3-none-any.whl
 ```
 
 ### <a name='data_structure'></a> Data Structure
