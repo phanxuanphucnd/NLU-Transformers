@@ -265,9 +265,11 @@ SOFTWARE.
   
 ## Author
 
-📌 ``arizona`` was developed by Phuc Phan © Copyright 2021.
+📌: 
 
-For any questions or comments, please contact the following email: phucpx@ftech.ai.
+``arizona`` was developed by Phuc Phan © Copyright 2021.
+
+For any questions or comments, please contact the following email: phanxuanphucnd@gmail.com.
 
 If you find it useful, please give me 1 star 🌟. 
 
