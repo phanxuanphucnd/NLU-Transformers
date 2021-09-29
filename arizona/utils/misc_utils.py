@@ -17,7 +17,10 @@ from seqeval.metrics import (
 from arizona.nlu.models import JointCoBERTa
 
 CONFIGS_REGISTRY = {
-    'coberta': RobertaConfig, 
+    'coberta': RobertaConfig,
+    'coberta-mini': RobertaConfig, 
+    'coberta-tiny': RobertaConfig, 
+    'coberta-small': RobertaConfig, 
     'phobert': RobertaConfig, 
     'roberta': RobertaConfig,
     'vinai/phobert-base': RobertaConfig,
@@ -27,6 +30,9 @@ CONFIGS_REGISTRY = {
 
 MODELS_REGISTRY = {
     'coberta': JointCoBERTa,
+    'coberta-mini': JointCoBERTa,
+    'coberta-tiny': JointCoBERTa,
+    'coberta-small': JointCoBERTa,
     'phobert': JointCoBERTa, 
     'roberta': JointCoBERTa,
     'vinai/phobert-base': JointCoBERTa,
@@ -36,6 +42,9 @@ MODELS_REGISTRY = {
 
 TOKENIZERS_REGISTRY = {
     'coberta': AutoTokenizer,
+    'coberta-mini': AutoTokenizer,
+    'coberta-tiny': AutoTokenizer,
+    'coberta-small': AutoTokenizer,
     'phobert': AutoTokenizer, 
     'roberta': RobertaTokenizer,
     'vinai/phobert-base': AutoTokenizer,
@@ -44,7 +53,10 @@ TOKENIZERS_REGISTRY = {
 }
 
 MODEL_PATH_MAP = {
-    'coberta': 'models/coberta-tini',
+    'coberta': 'models/coberta-mini',
+    'coberta-mini': 'models/coberta-mini',
+    'coberta-tiny': 'models/coberta-tiny',
+    'coberta-small': 'models/coberta-small-850',
     'phobert': 'vinai/phobert-base',
     'bert': 'bert-base-uncased',
 }

@@ -29,12 +29,10 @@ class JointCoBERTa(RobertaPreTrainedModel):
         intent_embedding_type: str='soft',
         use_attention_mask: bool=False,
         intent_loss_coef: float=1.0,
-        tag_loss_coef: float=1.0, 
-        **kwargs
+        tag_loss_coef: float=1.0
     ):
         super(JointCoBERTa, self).__init__(config)
 
-        self.kwargs = kwargs
         self.num_intent_labels = len(intent_labels)
         self.num_tag_labels = len(tag_labels)
         self.roberta = RobertaModel(config)
@@ -96,8 +94,11 @@ class JointCoBERTa(RobertaPreTrainedModel):
             for i, sample in enumerate(intent_logits):
                 max_idx = torch.argmax(sample)
                 hard_intent_logits[i][max_idx] = 1
+            
+            hard_intent_logits = hard_intent_logits.to(self.device)
             tag_logits = self.tag_classifier(sequence_output, hard_intent_logits, tmp_attention_mask)
         else:
+            intent_logits = intent_logits.to(self.device)
             tag_logits = self.tag_classifier(sequence_output, intent_logits, tmp_attention_mask)
 
         total_loss = 0
