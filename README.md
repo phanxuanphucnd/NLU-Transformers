@@ -29,8 +29,8 @@ NLU is understanding the meaning of the user’s input. Primarily focused on mac
 Intent Classification and Slot Filling (in other words, Named Entities Recognition - NER) are two essential tasks for NLU to form a semantic parse for user utterances. IC focuses on predicting the intent of the query, while NER extracts semantic concepts. 
 
 Transformer-based models have shown significantly better performance than the previous neural networks models. Currently, Denver has provided two independent models for each IC and NER tasks, one joint model using bi-LSTM. With the outperformed results of joint Transformer-based models for NLU tasks. We propose three steps to approach the problem as follows:
-- Provides a Joint model based on BERT/ RoBERTa + CRF ([Proposed approach 1](docs/imgs/nlu architecture propose 0.png)).
-- Provides Joint model based on BERT/ RoBERTa + CRF with an intent-slot attention layer to explicitly convey the intent context information via the soft intent label embedding into entity extraction ([Proposed approach 2](docs/imgs/nlu architecture propose 1.png)). There are two mechanisms intent context embedding includes: `hard-intent_context_embedding` and `soft-intent_context_embedding`.
+- Provides a Joint model based on BERT/ RoBERTa + CRF ([Proposed approach 1](https://github.com/phanxuanphucnd/transformers-nlu/blob/main/docs/imgs/nlu%20architecture%20propose%200.png)).
+- Provides Joint model based on BERT/ RoBERTa + CRF with an intent-slot attention layer to explicitly convey the intent context information via the soft intent label embedding into entity extraction ([Proposed approach 2](https://github.com/phanxuanphucnd/transformers-nlu/blob/main/docs/imgs/nlu%20architecture%20propose%201.png)). There are two mechanisms intent context embedding includes: `hard-intent_context_embedding` and `soft-intent_context_embedding`.
 
 Named: `JointCoberta`.
 
