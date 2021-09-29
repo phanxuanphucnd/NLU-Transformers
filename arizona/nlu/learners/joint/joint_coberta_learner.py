@@ -186,7 +186,7 @@ class JointCoBERTaLearner():
             early_stopping = EarlyStopping(patience=early_stopping)
 
         if tuning_metric == 'loss':
-            best_score = -1000
+            best_score = -10000
         else:
             best_score = 0
 

@@ -29,7 +29,8 @@ class JointCoBERTa(RobertaPreTrainedModel):
         intent_embedding_type: str='soft',
         use_attention_mask: bool=False,
         intent_loss_coef: float=1.0,
-        tag_loss_coef: float=1.0
+        tag_loss_coef: float=1.0,
+        **kwargs
     ):
         super(JointCoBERTa, self).__init__(config)
 
