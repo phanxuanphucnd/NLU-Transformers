@@ -35,7 +35,7 @@ Transformer-based models have shown significantly better performance than the pr
 Named: `JointCoberta`.
 
 
-**[EXPERIMENT REPORT](https://github.com/phanxuanphucnd/transformers-nlu/blob/main/docs/A%20overview%20of%20Nature%20Language%20Understanding%20(NLU)%20and%20SoTA%20Architectures%20so%20far.pdf)**
+**[EXPERIMENT REPORT](https://docs.google.com/document/d/1OG7fjwjYOhQyUtTVpQN2HvUXPXQEvIzegYhEw23oxXw/)**
 
 **[TUTORIAL SERIES](https://github.com/phanxuanphucnd/transformers-nlu/tree/main/tutorials)**
 
