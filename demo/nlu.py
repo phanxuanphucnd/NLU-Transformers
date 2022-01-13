@@ -12,7 +12,7 @@ from annotated_text import annotated_text
 SERVING_MODEL =  'http://0.0.0.0:8080/api/'
 
 st.title("Nature Language Understanding - NLU")
-st.write("*From: phucpx@ftech.ai*")
+st.write("*From: phanxuanphucnd@gmail.com*")
 st.write('\n\n')
 
 architectures = [
