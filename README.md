@@ -32,8 +32,11 @@ Transformer-based models have shown significantly better performance than the pr
 - Provides a Joint model based on BERT/ RoBERTa + CRF ([Proposed approach 1](https://github.com/phanxuanphucnd/transformers-nlu/blob/main/docs/imgs/nlu%20architecture%20propose%200.png)).
 - Provides Joint model based on BERT/ RoBERTa + CRF with an intent-slot attention layer to explicitly convey the intent context information via the soft intent label embedding into entity extraction ([Proposed approach 2](https://github.com/phanxuanphucnd/transformers-nlu/blob/main/docs/imgs/nlu%20architecture%20propose%201.png)). There are two mechanisms intent context embedding includes: `hard-intent_context_embedding` and `soft-intent_context_embedding`.
 
-Named: `JointCoberta`.
+Named: `JointCoberta`. 
 
+How to training a transformers-based language model? Refer to **[this repository](https://github.com/phanxuanphucnd/CoBERTa)**
+
+**[DOCUMENTATION](https://phanxuanphucnd.github.io/transformers-nlu/)**
 
 **[EXPERIMENT REPORT](https://docs.google.com/document/d/1OG7fjwjYOhQyUtTVpQN2HvUXPXQEvIzegYhEw23oxXw/)**
 
