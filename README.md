@@ -101,7 +101,7 @@ def test_training():
 
     test_dataset = JointNLUDataset(
         mode='test',
-        data_path='data/kcloset/test.csv',
+        data_path='data/test.csv',
         tokenizer='phobert',
         text_col='text',
         intent_col='intent',
