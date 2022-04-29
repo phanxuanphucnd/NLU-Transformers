@@ -13,7 +13,7 @@ def test_training():
 
     train_dataset = JointNLUDataset(
         mode='train',
-        data_path='data/kcloset/train.csv',
+        data_path='data/train.csv',
         tokenizer='phobert',
         text_col='text',
         intent_col='intent',
@@ -31,7 +31,7 @@ def test_training():
 
     test_dataset = JointNLUDataset(
         mode='test',
-        data_path='data/kcloset/test.csv',
+        data_path='data/test.csv',
         tokenizer='phobert',
         text_col='text',
         intent_col='intent',
@@ -73,7 +73,7 @@ def test_training():
         monitor_test=True,
         save_best_model=True,
         model_dir='./models',
-        model_name='phobert-hatt-kcloset',
+        model_name='phobert-hatt',
         gpu_id=0
     )
 

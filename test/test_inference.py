@@ -12,7 +12,7 @@ def test_infer():
     now = datetime.now()
 
     text = 'Xe bảo hành 1 năm nếu lỗi nhà sx ah b'
-    model_path = 'models/coberta-kcloset'
+    model_path = 'models/coberta'
 
     learner = JointCoBERTaLearner(model_type='coberta-tiny')
     learner.load_model(model_path)

@@ -13,7 +13,7 @@ def test_training():
 
     train_dataset = JointNLUDataset(
         mode='train',
-        data_path='data/cometv3/train.csv',
+        data_path='data/train.csv',
         tokenizer='phobert',
         text_col='text',
         intent_col='intent',
@@ -31,7 +31,7 @@ def test_training():
 
     test_dataset = JointNLUDataset(
         mode='test',
-        data_path='data/cometv3/test.csv',
+        data_path='data/test.csv',
         tokenizer='phobert',
         text_col='text',
         intent_col='intent',
@@ -51,7 +51,7 @@ def test_training():
 
     learner = JointCoBERTaLearner(
         model_type='phobert',
-        model_name_or_path='models/phobert-cometv3', 
+        model_name_or_path='models/phobert', 
         intent_loss_coef=0.4, 
         tag_loss_coef=0.6,
         use_intent_context_concat=True,
@@ -73,7 +73,7 @@ def test_training():
         monitor_test=True,
         save_best_model=True,
         model_dir='./models',
-        model_name='phobert-hatt-cometv3',
+        model_name='phobert-hatt',
         gpu_id=0
     )
 

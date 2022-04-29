@@ -7,8 +7,8 @@ from arizona.nlu.learners.joint import JointCoBERTaLearner
 
 def test_evaluate():
 
-    test_path = 'data/kcloset/test.csv'
-    model_path = './models/phobert-hatt-cometv3'
+    test_path = 'data/test.csv'
+    model_path = './models/phobert-hatt'
 
     learner = JointCoBERTaLearner(model_type='phobert')
     learner.load_model(model_path)
