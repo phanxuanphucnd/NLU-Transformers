@@ -1,4 +1,4 @@
-[![PyPI - Python](https://img.shields.io/badge/python-py%203.6%20|py%203.7%20-blue.svg)](https://github.com/phanxuanphucnd/transformers-nlu)
+[![PyPI - Python](https://img.shields.io/badge/python-%203.6%20|%203.7|%203.8%20-blue.svg)](https://github.com/phanxuanphucnd/transformers-nlu)
 [![PyPI - License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/phanxuanphucnd/transformers-nlu/blob/main/LICENSE)
 [![Open In Jupyter notebook](https://colab.research.google.com/assets/colab-badge.svg)](https://github.com/phanxuanphucnd/transformers-nlu/tree/main/tutorials)
 
